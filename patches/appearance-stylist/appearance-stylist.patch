@@ -1,0 +1,173 @@
+diff --git a/scripts/community_appearance_service.lua b/scripts/community_appearance_service.lua
+new file mode 100644
+index 0000000..06c9b68
+--- /dev/null
++++ b/scripts/community_appearance_service.lua
+@@ -0,0 +1,67 @@
++local WindowId = "CommunityAppearanceService"
++
++local function CanAppearanceChange()
++    if HasAnyActiveConflictRecords and HasAnyActiveConflictRecords(this) then
++        this:SystemMessage("Cannot change appearance while in a conflict.", "info")
++        return false
++    end
++    return true
++end
++
++local function TryAppearanceChange()
++    if not CanAppearanceChange() then
++        local window = DynamicWindow(WindowId, "", 50, 50, -370, 50, "Transparent", "TopRight")
++        window:AddButton(0, 0, "Control", "Change Appearance", 0, 26, "", "", false, "")
++        this:OpenDynamicWindow(window)
++        return
++    end
++
++    this:CloseDynamicWindow(WindowId)
++    this:SendMessage("StartMobileEffect", "GodFreeze")
++    if not this:HasModule("custom_char_window") then
++        this:AddModule("custom_char_window")
++    else
++        this:SendMessage("OpenCustomCharWindow", true)
++    end
++end
++
++local function EndAppearanceChange()
++    this:SendMessage("EndGodFreezeEffect")
++    this:SendMessage("CloseCustomCharWindow")
++    this:DelModule("custom_char_window")
++    this:DelModule("community_appearance_service")
++end
++
++RegisterEventHandler(EventType.ModuleAttached, "community_appearance_service", function()
++    TryAppearanceChange()
++end)
++
++RegisterEventHandler(EventType.LoadedFromBackup, "", function()
++    TryAppearanceChange()
++end)
++
++RegisterEventHandler(EventType.DynamicWindowResponse, WindowId, function(user, buttonId)
++    if buttonId == "Control" then
++        TryAppearanceChange()
++    end
++end)
++
++RegisterEventHandler(EventType.Message, "ClosedCustomCharWindow", function(wasCommit)
++    if wasCommit then
++        ClientDialog.Show{
++            TargetUser = this,
++            TitleStr = "Confirm Appearance Change",
++            DescStr = "Are you sure you wish to keep this appearance?",
++            ResponseFunc = function(user, buttonId)
++                if buttonId == 0 then
++                    EndAppearanceChange()
++                else
++                    TryAppearanceChange()
++                end
++            end,
++        }
++    else
++        this:SystemMessage("You must complete your appearance change at this time.", "info")
++        this:SendMessage("OpenCustomCharWindow", true)
++    end
++end)
+diff --git a/scripts/community_appearance_stylist.lua b/scripts/community_appearance_stylist.lua
+new file mode 100644
+index 0000000..4f7bb6c
+--- /dev/null
++++ b/scripts/community_appearance_stylist.lua
+@@ -0,0 +1,48 @@
++local WindowId = "CommunityAppearanceStylist"
++
++local function CanTalk(user)
++    if not user then return false end
++    if user:DistanceFrom(this) > OBJECT_INTERACTION_RANGE then
++        user:SystemMessage("You need to stand closer to the stylist.", "info")
++        return false
++    end
++    return true
++end
++
++local function OpenStylistWindow(user)
++    local window = DynamicWindow(WindowId, "Appearance Stylist", 460, 280, 140, 100, "Default", "TopLeft")
++    window:AddLabel(24, 24, "[FFB000]Appearance Stylist[-]", 380, 24, 22, "left")
++    window:AddLabel(24, 58,
++        "Restyle your face, hair, and overall appearance. This complimentary service uses the native character editor.",
++        400, 54, 15, "left")
++    window:AddLabel(24, 126, "You must be out of combat to use appearance services.", 400, 22, 14, "left")
++    window:AddButton(26, 184, "Appearance", "Change Appearance", 180, 34,
++        "Open the full appearance editor.", "", false)
++    window:AddButton(226, 184, "Close", "Close", 180, 34, "", "", false)
++    user:OpenDynamicWindow(window, this)
++end
++
++RegisterEventHandler(EventType.Message, "UseObject", function(user, usedType)
++    if usedType ~= nil and usedType ~= "Talk" then return end
++    if not CanTalk(user) then return end
++    OpenStylistWindow(user)
++end)
++
++RegisterEventHandler(EventType.DynamicWindowResponse, WindowId, function(user, buttonId)
++    if not CanTalk(user) then return end
++    if not buttonId or buttonId == "" or buttonId == "Close" then return end
++
++    if buttonId == "Appearance" then
++        user:AddModule("community_appearance_service")
++    end
++end)
++
++RegisterSingleEventHandler(EventType.ModuleAttached, GetCurrentModule(), function()
++    this:SetObjVar("NoReset", true)
++    this:SetObjVar("ImportantNPC", true)
++    this:SetObjVar("Invulnerable", true)
++    this:SetObjVar("GuardProtect", true)
++    SetTooltipEntry(this, "community_appearance_stylist",
++        "A stylist who offers full character appearance changes.")
++    AddUseCase(this, "Talk", true, "UseObject")
++end)
+diff --git a/templates/mobiles/community_appearance_stylist.xml b/templates/mobiles/community_appearance_stylist.xml
+new file mode 100644
+index 0000000..780b464
+--- /dev/null
++++ b/templates/mobiles/community_appearance_stylist.xml
+@@ -0,0 +1,40 @@
++<ObjectTemplate>
++	<ClientId>208</ClientId>
++	<Hue>176</Hue>
++	<Name>[FFB000]Appearance Stylist[-]</Name>
++	<SharedStateEntry name="Title" type="string" value="Stylist"/>
++	<ObjectVariableComponent>
++		<StringVariable Name="MobileTeamType">Villagers</StringVariable>
++		<StringVariable Name="MobileKind">Humanoid</StringVariable>
++		<DoubleVariable Name="BaseHealth">300</DoubleVariable>
++		<BoolVariable Name="GuardProtect">True</BoolVariable>
++		<BoolVariable Name="ImportantNPC">True</BoolVariable>
++		<BoolVariable Name="Invulnerable">True</BoolVariable>
++		<BoolVariable Name="NoReset">True</BoolVariable>
++		<BoolVariable Name="NoDisrobe">True</BoolVariable>
++		<BoolVariable Name="noloot">True</BoolVariable>
++	</ObjectVariableComponent>
++	<ScriptEngineComponent>
++		<LuaModule Name="guard_protect"/>
++		<LuaModule Name="base_ai_npc">
++			<Initializer>
++				{
++					Stats = { Str = 40, Agi = 50, Int = 60 },
++					EquipTable = {
++						BodyPartHead = { "head_female03" },
++						BodyPartHair = { {"hair_female", "0xFF2C1C14"} },
++						Chest = { {"merchant_clothing_chest", 941} },
++						Legs = { {"merchant_clothing_legs", 941} },
++						Cloak = { {"clothing_chest_cloak_basic", 893} },
++						Backpack = { "backpack" },
++					},
++				}
++			</Initializer>
++		</LuaModule>
++		<LuaModule Name="community_appearance_stylist"/>
++	</ScriptEngineComponent>
++	<MobileComponent>
++		<BaseRunSpeed>1</BaseRunSpeed>
++		<MobileType>Friendly</MobileType>
++	</MobileComponent>
++</ObjectTemplate>

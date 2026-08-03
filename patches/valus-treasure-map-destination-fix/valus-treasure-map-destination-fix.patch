@@ -1,0 +1,84 @@
+diff --git a/templates/items/sos_map.xml b/templates/items/sos_map.xml
+index 7b252b5..dbc4f77 100644
+--- a/templates/items/sos_map.xml
++++ b/templates/items/sos_map.xml
+@@ -19,7 +19,6 @@
+                         {"Area-Yoln's Bluff","Yoln's Bluff"},
+                         {"Area-The Brooks","The Brooks"},
+                         {"Area-East Valusia","East Valusia"},
+-                        {"Area-Valus","Valus"},
+                         {"Area-Bel Lake","Bel Lake"},
+                         {"Area-Belhaven","Belhaven"},
+                         {"Area-Caester Run","Caester Run"},
+diff --git a/templates/items/sos_map_1.xml b/templates/items/sos_map_1.xml
+index c8702aa..9eb94e1 100644
+--- a/templates/items/sos_map_1.xml
++++ b/templates/items/sos_map_1.xml
+@@ -19,7 +19,6 @@
+                         {"Area-Yoln's Bluff","Yoln's Bluff"},
+                         {"Area-The Brooks","The Brooks"},
+                         {"Area-East Valusia","East Valusia"},
+-                        {"Area-Valus","Valus"},
+                         {"Area-Bel Lake","Bel Lake"},
+                         {"Area-Belhaven","Belhaven"},
+                         {"Area-Caester Run","Caester Run"},
+diff --git a/templates/items/sos_map_2.xml b/templates/items/sos_map_2.xml
+index 4940933..dfd1fd0 100644
+--- a/templates/items/sos_map_2.xml
++++ b/templates/items/sos_map_2.xml
+@@ -19,7 +19,6 @@
+                         {"Area-Yoln's Bluff","Yoln's Bluff"},
+                         {"Area-The Brooks","The Brooks"},
+                         {"Area-East Valusia","East Valusia"},
+-                        {"Area-Valus","Valus"},
+                         {"Area-Bel Lake","Bel Lake"},
+                         {"Area-Belhaven","Belhaven"},
+                         {"Area-Caester Run","Caester Run"},
+diff --git a/templates/items/sos_map_3.xml b/templates/items/sos_map_3.xml
+index 8e54fd8..6a187bd 100644
+--- a/templates/items/sos_map_3.xml
++++ b/templates/items/sos_map_3.xml
+@@ -19,7 +19,6 @@
+                         {"Area-Yoln's Bluff","Yoln's Bluff"},
+                         {"Area-The Brooks","The Brooks"},
+                         {"Area-East Valusia","East Valusia"},
+-                        {"Area-Valus","Valus"},
+                         {"Area-Bel Lake","Bel Lake"},
+                         {"Area-Belhaven","Belhaven"},
+                         {"Area-Caester Run","Caester Run"},
+diff --git a/templates/items/sos_map_4.xml b/templates/items/sos_map_4.xml
+index cca3a59..a53dfed 100644
+--- a/templates/items/sos_map_4.xml
++++ b/templates/items/sos_map_4.xml
+@@ -19,7 +19,6 @@
+                         {"Area-Yoln's Bluff","Yoln's Bluff"},
+                         {"Area-The Brooks","The Brooks"},
+                         {"Area-East Valusia","East Valusia"},
+-                        {"Area-Valus","Valus"},
+                         {"Area-Bel Lake","Bel Lake"},
+                         {"Area-Belhaven","Belhaven"},
+                         {"Area-Caester Run","Caester Run"},
+diff --git a/templates/items/treasure_map.xml b/templates/items/treasure_map.xml
+index b8169ae..ea31500 100644
+--- a/templates/items/treasure_map.xml
++++ b/templates/items/treasure_map.xml
+@@ -11,7 +11,6 @@
+ 				{
+ 				RegionalNames = 
+                     {
+-                        {"Area-Valus","Valus"},
+                         {"Area-Lake Tethys","Lake Tethys"},
+                         {"Area-Black Grove","Black Grove"},
+ 
+diff --git a/templates/items/treasure_map_1.xml b/templates/items/treasure_map_1.xml
+index 567dd9b..50497ca 100644
+--- a/templates/items/treasure_map_1.xml
++++ b/templates/items/treasure_map_1.xml
+@@ -11,7 +11,6 @@
+ 				{
+ 				RegionalNames = 
+                     {
+-                        {"Area-Valus","Valus"},
+                         {"Area-Lake Tethys","Lake Tethys"},
+                         {"Area-Black Grove","Black Grove"},
+ 

@@ -1,0 +1,59 @@
+diff --git a/scripts/base_ai_npc.lua b/scripts/base_ai_npc.lua
+index e0ee9fb..2f2442f 100644
+--- a/scripts/base_ai_npc.lua
++++ b/scripts/base_ai_npc.lua
+@@ -1074,7 +1074,7 @@ RegisterEventHandler(EventType.EnterView,"NearbyPlayer",
+         --new quest system
+         local questStartDialogue = Quests.GetDialogue(player, AI.QuestStepsInvolvedIn, "Start") or {}
+         local questEndDialogue = Quests.GetDialogue(player, AI.QuestStepsInvolvedIn, "End") or {}
+-        if ( not this:HasTimer("NoShout") and GetSkillTotal(player) < 600 ) then
++        if ( not this:HasTimer("NoShout") and GetSkillTotal(player) < ServerSettings.Skills.PlayerSkillCap.Total ) then
+             if ( questEndDialogue and next(questEndDialogue) ) then
+                 this:NpcSpeech("[F2F5A9]"..player:GetName().."![-] "..AI.QuestCompleteMessages[math.random(1,#AI.QuestCompleteMessages)])
+                 this:ScheduleTimerDelay(TimeSpan.FromSeconds(10),"NoShout")
+diff --git a/scripts/globals/helpers/spawns.lua b/scripts/globals/helpers/spawns.lua
+index 5b25f2c..0a9acce 100644
+--- a/scripts/globals/helpers/spawns.lua
++++ b/scripts/globals/helpers/spawns.lua
+@@ -103,6 +103,10 @@ end
+ -- Returns a table of players in the given spawn_controller's area of influence.
+ HelperSpawns.GetPlayersPowerInSpawnRegionOrRange = function( spawn_controller, players )
+     local power = 0
++    local playerPowerCap = math.min(
++        ServerSettings.Skills.PlayerSkillCap.Total,
++        ServerSettings.Skills.DynamicSpawnPowerSkillCap or ServerSettings.Skills.PlayerSkillCap.Total
++    )
+ 
+     -- We did pass any players
+     if( not players ) then
+@@ -110,13 +114,13 @@ HelperSpawns.GetPlayersPowerInSpawnRegionOrRange = function( spawn_controller, p
+         HelperSpawns.ForeachPlayerInSpawnRegion( spawn_controller, 
+         function(player)
+             if( not IsGod(player) or TestMortal(player) ) then
+-                power = power + math.min(GetSkillTotal( player ), ServerSettings.Skills.PlayerSkillCap.Total)
++                power = power + math.min(GetSkillTotal( player ), playerPowerCap)
+             end
+         end)
+     else
+         for player,v in pairs(players) do 
+             if( not IsGod(player) or TestMortal(player) ) then
+-                power = power + math.min(GetSkillTotal( player ), ServerSettings.Skills.PlayerSkillCap.Total)
++                power = power + math.min(GetSkillTotal( player ), playerPowerCap)
+             end
+         end
+     end
+diff --git a/scripts/globals/server_settings/skills.lua b/scripts/globals/server_settings/skills.lua
+index 42834f3..bb31fa1 100644
+--- a/scripts/globals/server_settings/skills.lua
++++ b/scripts/globals/server_settings/skills.lua
+@@ -5,6 +5,10 @@ ServerSettings.Skills = {
+ 		Single = 100,
+ 		Total = 600,
+ 	},
++	-- Optional balance ceiling used by dynamic proximity spawn pacing. Keep
++	-- this at the original total cap when a larger PlayerSkillCap.Total is
++	-- intended to broaden builds without accelerating nearby spawns.
++	DynamicSpawnPowerSkillCap = 600,
+ 
+ 	-- multiplies all gain chances by this amount, set to 1 for no effect, lower for slower gains, higher for quicker gains.
+ 	GainFactor = 1,
