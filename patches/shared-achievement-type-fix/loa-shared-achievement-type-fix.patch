@@ -1,0 +1,49 @@
+diff --git a/scripts/base_player_achievement.lua b/scripts/base_player_achievement.lua
+--- a/scripts/base_player_achievement.lua
++++ b/scripts/base_player_achievement.lua
+@@ -85,6 +85,13 @@ function AddAchievementElement(scrollWindow,achievementName,achievementDescripti
+ 		achievementIcon = "achievement_Renown_RenownAmount"
+ 	else
+ 		achievementIcon = "achievement_"..mAchievementTab.."_"..type
++		-- MagerySkill is a legacy shared type with no matching client icon.
++		-- Its two title series use the Manifestation and Evocation assets.
++		if type == "MagerySkill" then
++			achievementIcon = string.find(achievementName, "Evoker")
++				and "achievement_Skill_EvocationSkill"
++				or "achievement_Skill_ManifestationSkill"
++		end
+ 		achievementIcon = AchievementIconOverride[achievementIcon] or achievementIcon
+ 	end
+ 
+@@ -319,23 +326,14 @@ function CompleteAchievementPressed(achievement, achievementType, achievementSub
+ 	local achievementToComplete = nil
+ 	for key,value in pairs(achievementWaiting) do
+ 		if (value.Category == mCategory) and (value.Type == achievementType) and (value.Subcategory == "" or value.Subcategory == achievementSubcategory) then
+-			local tab = {}
+-			if (value.Subcategory == "") then
+-				tab = AllAchievements[value.Category.."Achievements"][value.Type]
+-			else
+-				tab = AllAchievements[value.Category.."Achievements"][value.Subcategory][value.Type]
+-			end
+-			if (tab ~= nil) then
+-				for i,j in pairs(tab) do
+-					if (i == 1 and j[1] == achievement) or (j[1] == achievement and tab[i + 1][1] == value.Achievement) then
+-						achievementReward = value.Reward
+-						table.insert(completedAchievements, value)
+-						table.remove(achievementWaiting, key)
+-						achievementToComplete = value
+-						break
+-					end
+-				end
+-			end
++			-- The window collapses all achievements with the same Type into one row.
++			-- That row's displayed name is not reliable when a Type contains multiple
++			-- title series (MagerySkill contains both Mage and Evoker). Claim the first
++			-- pending entry for the selected Type instead of comparing display names.
++			achievementReward = value.Reward
++			table.insert(completedAchievements, value)
++			table.remove(achievementWaiting, key)
++			achievementToComplete = value
+ 			break
+ 		end
+ 	end
