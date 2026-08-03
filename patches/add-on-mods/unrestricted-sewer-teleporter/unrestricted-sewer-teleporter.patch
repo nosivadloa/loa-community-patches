@@ -1,0 +1,26 @@
+diff --git a/scripts/sewer_teleporter.lua b/scripts/sewer_teleporter.lua
+index c5cee22..482f8a6 100644
+--- a/scripts/sewer_teleporter.lua
++++ b/scripts/sewer_teleporter.lua
+@@ -1,14 +1,10 @@
+ require 'teleporter'
+ 
+-OverrideEventHandler("default:teleporter",EventType.Message, "UseObject", 
+-    function(user,usedType)
+-    	if(usedType == "Use" or usedType == "Activate") then 
+-    		if (user:GetObjVar("PickedProfession") == false) then
+-    			user:SendMessage("NewbieLeaveTown")
+-    		else
+-	    		ActivateTeleporter(user)
+-	    	end
+-    	elseif(usedType == "Set Destination") then
+-    		ShowSetDestinationWindow(user)
+-    	end
++OverrideEventHandler("default:teleporter", EventType.Message, "UseObject",
++    function(user, usedType)
++        if usedType == "Use" or usedType == "Activate" then
++            ActivateTeleporter(user)
++        elseif usedType == "Set Destination" then
++            ShowSetDestinationWindow(user)
++        end
+     end)

@@ -1,0 +1,376 @@
+diff --git a/scripts/base_transaction.lua b/scripts/base_transaction.lua
+index f97126e..0bd12ac 100644
+--- a/scripts/base_transaction.lua
++++ b/scripts/base_transaction.lua
+@@ -84,6 +84,37 @@ function InitiateTransaction(buyer,buyItem,itemPrice, amount)
+ 	ShowTransactionConfirm(transactionId,buyer,buyItem,itemPrice, amount)
+ end
+ 
++local function BuildGoldPaymentPlan(buyer, price)
++	local backpackCoins = CountCoins(buyer)
++	local bankCoins = CountCoinsInBank(buyer)
++
++	if backpackCoins >= price then
++		return { Backpack = price, Bank = 0, Stage = "Backpack" }
++	elseif bankCoins >= price then
++		return { Backpack = 0, Bank = price, Stage = "Bank" }
++	elseif backpackCoins + bankCoins >= price then
++		return { Backpack = backpackCoins, Bank = price - backpackCoins, Stage = "Backpack" }
++	end
++
++	return nil
++end
++
++local function RefundBackpackCoins(buyer, amount)
++	if amount <= 0 then return end
++
++	local backpack = buyer:GetEquippedObject("Backpack")
++	if backpack ~= nil then
++		for _, item in pairs(backpack:GetContainedObjects() or {}) do
++			if item:GetObjVar("ResourceType") == "coins" then
++				RequestAddToStack(item, amount)
++				return
++			end
++		end
++	end
++
++	CreateObjInBackpack(buyer, "coin_purse", "legacy_vendor_bank_payment_refund", amount)
++end
++
+ function ShowTransactionConfirm(transactionId,buyer,buyItem,itemPrice, amount)
+ 	local num = "the"
+ 	local name = ""
+@@ -185,11 +216,9 @@ function HandleTransactionConfirm(user,transactionId,toBank)
+ 	local price = transactionData.Price
+ 	local amount = transactionData.Amount
+ 	if( Merchant.CurrencyInfo.CurrencyType == "coins" ) then
+-		local backpackCanBuy = ( CountCoins(buyer) >= price )
+-		local bankCanBuy = ( CountCoinsInBank(buyer) >= price )
++		local payment = BuildGoldPaymentPlan(buyer, price)
+ 
+-		-- BANKMERCHANT: See if bank has enough coins here.
+-		if( not backpackCanBuy and not bankCanBuy ) then
++		if( payment == nil ) then
+ 			Merchant.DoCantAfford(buyer)
+ 			activeTransactions[transactionId] = nil
+ 			return
+@@ -197,14 +226,14 @@ function HandleTransactionConfirm(user,transactionId,toBank)
+ 			local stockCount = Merchant.CountStock(item)
+ 			if ( stockCount >= amount ) then
+ 				-- everything checks out lets take the coins
+-				transactionData.State = "TakeCoins"		
++				transactionData.State = "TakeCoins"
++				transactionData.Payment = payment
+ 				--DebugMessage("price",tostring(price),tostring(transactionId))	
+ 
+-				-- Can our backpack afford the purchase, if not take from the bank!
+-				if( backpackCanBuy ) then
+-					RequestConsumeResource(buyer,"coins",price,transactionId,this)
++				if( payment.Stage == "Backpack" ) then
++					RequestConsumeResource(buyer,"coins",payment.Backpack,transactionId,this)
+ 				else
+-					RequestConsumeResourceFromBank(buyer,"coins",price,transactionId,this)
++					RequestConsumeResourceFromBank(buyer,"coins",payment.Bank,transactionId,this)
+ 				end
+ 				
+ 			elseif(stockCount == 0) then
+@@ -262,17 +291,37 @@ function HandleConsumeResourceResponse(success,transactionId,buyer)
+ 		return
+ 	end
+ 
++	local transactionData = activeTransactions[transactionId]
++	local payment = transactionData.Payment
++
+ 	-- something went wrong taking the coins
+ 	if( not(success) ) then
+ 		DebugMessage("ERROR: HandleConsumeResourceResponse failed",tostring(transactionId),tostring(buyer))
++		if payment ~= nil and payment.Stage == "Bank" and payment.Backpack > 0 then
++			RefundBackpackCoins(transactionData.Buyer, payment.Backpack)
++			transactionData.Buyer:SystemMessage("The bank payment failed. Your backpack gold was refunded.", "info")
++		end
+ 		Merchant.DoCantAfford(buyer)		
++	elseif payment ~= nil and payment.Stage == "Backpack" and payment.Bank > 0 then
++		payment.Stage = "Bank"
++		RequestConsumeResourceFromBank(transactionData.Buyer,"coins",payment.Bank,transactionId,this)
++		return
+ 	-- we have taken the coins complete the transaction
+ 	else
+-		local transactionData = activeTransactions[transactionId]
+ 		Merchant.DoPurchase(transactionData.Buyer,transactionData.Item,transactionData.Price, transactionData.Amount, transactionData.ToBank)		
++		if payment ~= nil and payment.Bank > 0 then
++			transactionData.Buyer:SystemMessage(ValueToAmountStr(payment.Bank,false,true).." was paid from your bank.", "info")
++		end
+ 	end
+ 
+ 	activeTransactions[transactionId] = nil
+ end
+ 
+-RegisterEventHandler(EventType.Message, "ConsumeResourceResponse", HandleConsumeResourceResponse)
+\ No newline at end of file
++RegisterEventHandler(EventType.Message, "ConsumeResourceResponse", HandleConsumeResourceResponse)
++
++RegisterEventHandler(EventType.CreatedObject, "legacy_vendor_bank_payment_refund",
++	function(success, objRef, amount)
++		if success and amount > 1 then
++			RequestSetStack(objRef, amount)
++		end
++	end)
+diff --git a/scripts/merchant_shop_ui.lua b/scripts/merchant_shop_ui.lua
+index 68251ca..f759b6d 100644
+--- a/scripts/merchant_shop_ui.lua
++++ b/scripts/merchant_shop_ui.lua
+@@ -756,7 +756,7 @@ function MerchantShopUI.BuildBuyView(window, merchant, player, contentY, frameX,
+     end
+ 
+     -- Footer anchored near the bottom of the parchment so it never overlaps rows.
+-    local goldAvail = CountCoins(player)
++    local goldAvail = CountCoins(player) + CountCoinsInBank(player)
+     local footerY   = WIN_H - 120
+     local btnY      = WIN_H - 78    
+ 
+@@ -1096,6 +1096,37 @@ end
+ 
+ -- ── Buy checkout ──────────────────────────────────────────────────────────
+ 
++local function BuildGoldPaymentPlan(player, total)
++    local backpackCoins = CountCoins(player)
++    local bankCoins = CountCoinsInBank(player)
++
++    if backpackCoins >= total then
++        return { backpack = total, bank = 0, stage = "Backpack" }
++    elseif bankCoins >= total then
++        return { backpack = 0, bank = total, stage = "Bank" }
++    elseif backpackCoins + bankCoins >= total then
++        return { backpack = backpackCoins, bank = total - backpackCoins, stage = "Backpack" }
++    end
++
++    return nil
++end
++
++local function RefundBackpackCoins(player, amount)
++    if amount <= 0 then return end
++
++    local backpack = player:GetEquippedObject("Backpack")
++    if backpack ~= nil then
++        for _, item in pairs(backpack:GetContainedObjects() or {}) do
++            if item:GetObjVar("ResourceType") == "coins" then
++                RequestAddToStack(item, amount)
++                return
++            end
++        end
++    end
++
++    CreateObjInBackpack(player, "coin_purse", "merchant_bank_payment_refund", amount)
++end
++
+ function MerchantShopUI.Checkout(merchant, player)
+     if player == nil or not player:IsValid() then return end
+     if IsDead(merchant) then
+@@ -1170,21 +1201,25 @@ function MerchantShopUI.Checkout(merchant, player)
+         return
+     end
+ 
+-    local backpackCoins = CountCoins(player)
+-    local bankCoins     = CountCoinsInBank(player)
+-    if backpackCoins + bankCoins < total then
++    local payment = BuildGoldPaymentPlan(player, total)
++    if payment == nil then
+         QuickDialogMessage(this, player, AI.CantAffordPurchaseMessages[math.random(1, #AI.CantAffordPurchaseMessages)])
+         MerchantShopUI.BuildAndSend(merchant, player)
+         return
+     end
+ 
+     local checkoutId = "ShopCheckout_" .. uuid()
+-    activeShopCheckouts[checkoutId] = { player = player, items = checkoutItems, total = total }
++    activeShopCheckouts[checkoutId] = {
++        player = player,
++        items = checkoutItems,
++        total = total,
++        payment = payment,
++    }
+ 
+-    if backpackCoins >= total then
+-        RequestConsumeResource(player, "coins", total, checkoutId, merchant)
++    if payment.stage == "Backpack" then
++        RequestConsumeResource(player, "coins", payment.backpack, checkoutId, merchant)
+     else
+-        RequestConsumeResourceFromBank(player, "coins", total, checkoutId, merchant)
++        RequestConsumeResourceFromBank(player, "coins", payment.bank, checkoutId, merchant)
+     end
+ end
+ 
+@@ -1269,17 +1304,31 @@ RegisterEventHandler(EventType.Message, "ConsumeResourceResponse",
+     function(success, checkoutId, buyer)
+         local checkout = activeShopCheckouts[checkoutId]
+         if checkout == nil then return end
+-        activeShopCheckouts[checkoutId] = nil
+-
+         local player = checkout.player
+-        if player == nil or not player:IsValid() then return end
++        if player == nil or not player:IsValid() then
++            activeShopCheckouts[checkoutId] = nil
++            return
++        end
+ 
+         if not success then
++            if checkout.payment.stage == "Bank" and checkout.payment.backpack > 0 then
++                RefundBackpackCoins(player, checkout.payment.backpack)
++                player:SystemMessage("The bank payment failed. Your backpack gold was refunded.", "info")
++            end
++            activeShopCheckouts[checkoutId] = nil
+             QuickDialogMessage(this, player, AI.CantAffordPurchaseMessages[math.random(1, #AI.CantAffordPurchaseMessages)])
+             MerchantShopUI.BuildAndSend(this, player)
+             return
+         end
+ 
++        if checkout.payment.stage == "Backpack" and checkout.payment.bank > 0 then
++            checkout.payment.stage = "Bank"
++            RequestConsumeResourceFromBank(player, "coins", checkout.payment.bank, checkoutId, this)
++            return
++        end
++
++        activeShopCheckouts[checkoutId] = nil
++
+         for _, entry in ipairs(checkout.items) do
+             if entry.item ~= nil and entry.item:IsValid() then
+                 FulfillLivePurchase(this, player, entry)
+@@ -1289,9 +1338,20 @@ RegisterEventHandler(EventType.Message, "ConsumeResourceResponse",
+         end
+ 
+         ClearCart(player)
++        if checkout.payment.bank > 0 then
++            player:SystemMessage(ValueToAmountStr(checkout.payment.bank)
++                .. " was paid from your bank.", "info")
++        end
+         MerchantShopUI.BuildAndSend(this, player)
+     end)
+ 
++RegisterEventHandler(EventType.CreatedObject, "merchant_bank_payment_refund",
++    function(success, objRef, amount)
++        if success and amount > 1 then
++            RequestSetStack(objRef, amount)
++        end
++    end)
++
+ -- ── Sell checkout (synchronous — no coin consume needed) ──────────────────
+ 
+ function MerchantShopUI.SellCheckout(merchant, player)
+diff --git a/scripts/player_vendor_shop_ui.lua b/scripts/player_vendor_shop_ui.lua
+index d5eb705..2a8eda0 100644
+--- a/scripts/player_vendor_shop_ui.lua
++++ b/scripts/player_vendor_shop_ui.lua
+@@ -88,6 +88,21 @@ local function RefundCurrency(player, amount)
+     CreateObjInBackpack(player, "coin_purse", "player_vendor_refund", amount)
+ end
+ 
++local function BuildGoldPaymentPlan(player, total)
++    local backpackCoins = CountCoins(player)
++    local bankCoins = CountCoinsInBank(player)
++
++    if backpackCoins >= total then
++        return { backpack = total, bank = 0, stage = "Backpack" }
++    elseif bankCoins >= total then
++        return { backpack = 0, bank = total, stage = "Bank" }
++    elseif backpackCoins + bankCoins >= total then
++        return { backpack = backpackCoins, bank = total - backpackCoins, stage = "Backpack" }
++    end
++
++    return nil
++end
++
+ function PlayerVendorShopUI.GetWindowId(merchant)
+     return "PlayerVendorShop_" .. tostring(merchant)
+ end
+@@ -426,7 +441,7 @@ function PlayerVendorShopUI.BuildAndSend(merchant, player)
+     window:AddScrollWindow(listScroll)
+ 
+     local cartEntries, total = GetCartSummary(merchant, player)
+-    local goldAvailable = math.max(CountCoins(player), CountCoinsInBank(player))
++    local goldAvailable = CountCoins(player) + CountCoinsInBank(player)
+     local footerY = WIN_H - 120
+     local btnY = WIN_H - 78
+ 
+@@ -532,9 +547,8 @@ function PlayerVendorShopUI.Checkout(merchant, player)
+         end
+     end
+ 
+-    local backpackCoins = CountCoins(player)
+-    local bankCoins = CountCoinsInBank(player)
+-    if backpackCoins < total and bankCoins < total then
++    local payment = BuildGoldPaymentPlan(player, total)
++    if payment == nil then
+         Merchant.DoCantAfford(player)
+         PlayerVendorShopUI.BuildAndSend(merchant, player)
+         return
+@@ -545,16 +559,17 @@ function PlayerVendorShopUI.Checkout(merchant, player)
+         player = player,
+         entries = entries,
+         total = total,
++        payment = payment,
+     }
+     activeCheckoutPlayers[playerKey] = true
+     for _, entry in ipairs(entries) do
+         activeListingReservations[entry.key] = checkoutId
+     end
+ 
+-    if backpackCoins >= total then
+-        RequestConsumeResource(player, "coins", total, checkoutId, merchant)
++    if payment.stage == "Backpack" then
++        RequestConsumeResource(player, "coins", payment.backpack, checkoutId, merchant)
+     else
+-        RequestConsumeResourceFromBank(player, "coins", total, checkoutId, merchant)
++        RequestConsumeResourceFromBank(player, "coins", payment.bank, checkoutId, merchant)
+     end
+ end
+ 
+@@ -562,22 +577,36 @@ RegisterEventHandler(EventType.Message, "ConsumeResourceResponse",
+     function(success, checkoutId)
+         local checkout = activeCheckouts[checkoutId]
+         if checkout == nil then return end
+-        activeCheckouts[checkoutId] = nil
+-
+         local player = checkout.player
+-        activeCheckoutPlayers[tostring(player)] = nil
+         if player == nil or not player:IsValid() then
++            activeCheckouts[checkoutId] = nil
++            activeCheckoutPlayers[tostring(player)] = nil
+             ReleaseListingReservations(checkoutId, checkout.entries)
+             return
+         end
+ 
+         if not success then
++            if checkout.payment.stage == "Bank" and checkout.payment.backpack > 0 then
++                RefundCurrency(player, checkout.payment.backpack)
++                player:SystemMessage("The bank payment failed. Your backpack gold was refunded.", "info")
++            end
++            activeCheckouts[checkoutId] = nil
++            activeCheckoutPlayers[tostring(player)] = nil
+             ReleaseListingReservations(checkoutId, checkout.entries)
+             Merchant.DoCantAfford(player)
+             PlayerVendorShopUI.BuildAndSend(this, player)
+             return
+         end
+ 
++        if checkout.payment.stage == "Backpack" and checkout.payment.bank > 0 then
++            checkout.payment.stage = "Bank"
++            RequestConsumeResourceFromBank(player, "coins", checkout.payment.bank, checkoutId, this)
++            return
++        end
++
++        activeCheckouts[checkoutId] = nil
++        activeCheckoutPlayers[tostring(player)] = nil
++
+         local purchased = 0
+         local purchasedUnits = 0
+         local purchasedTotal = 0
+@@ -598,6 +627,10 @@ RegisterEventHandler(EventType.Message, "ConsumeResourceResponse",
+         end
+ 
+         ClearCart(player)
++        if checkout.payment.bank > 0 then
++            player:SystemMessage(ValueToAmountStr(checkout.payment.bank, false, true)
++                .. " was paid from your bank.", "info")
++        end
+         if purchased > 0 then
+             player:SystemMessage("You purchased " .. tostring(purchasedUnits)
+                 .. (purchasedUnits == 1 and " item" or " items")

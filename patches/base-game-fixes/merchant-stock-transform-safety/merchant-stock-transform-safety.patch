@@ -1,0 +1,621 @@
+diff --git a/templates/celador/cel_merchant_carpenter.xml b/templates/celador/cel_merchant_carpenter.xml
+index 3235144..58f485d 100644
+--- a/templates/celador/cel_merchant_carpenter.xml
++++ b/templates/celador/cel_merchant_carpenter.xml
+@@ -118,23 +118,29 @@
+ 						Rotation = "0, 270, 0",
+ 						UnlimitedStock = true,
+ 						},
+-						{
+-							Template = "resource_boards",
+-							Price = 0,
+-							Amount = 50,
+-							UnlimitedStock = false,
+-						},
+-						{
+-							Template = "resource_brick",
+-							Price = 0,
+-							Amount = 50,
+-							UnlimitedStock = false,
+-						},
+-						{
+-							Template = "resource_iron",
+-							Price = 0,
+-							Amount = 50,
+-							UnlimitedStock = false,
++						{
++							Template = "resource_boards",
++							Price = 0,
++							Amount = 50,
++							RelativeLoc = "-2.75, 0.9, -3.75",
++							Rotation = "0, 270, 0",
++							UnlimitedStock = false,
++						},
++						{
++							Template = "resource_brick",
++							Price = 0,
++							Amount = 50,
++							RelativeLoc = "-1.75, 0.9, -3.75",
++							Rotation = "0, 270, 0",
++							UnlimitedStock = false,
++						},
++						{
++							Template = "resource_iron",
++							Price = 0,
++							Amount = 50,
++							RelativeLoc = "-0.75, 0.9, -3.75",
++							Rotation = "0, 270, 0",
++							UnlimitedStock = false,
+ 						},
+ 					},
+ 				NPCDialogue = {
+@@ -162,4 +168,4 @@
+ 		<BaseRunSpeed>1</BaseRunSpeed>
+ 		<MobileType>Friendly</MobileType>
+ 	</MobileComponent>
+-</ObjectTemplate>
+\ No newline at end of file
++</ObjectTemplate>
+diff --git a/templates/celador/cel_merchant_general_store.xml b/templates/celador/cel_merchant_general_store.xml
+index f6a33d0..a6bfe89 100644
+--- a/templates/celador/cel_merchant_general_store.xml
++++ b/templates/celador/cel_merchant_general_store.xml
+@@ -63,12 +63,13 @@
+ 							Rotation = "359.3423, 152.1369, 0.335988",
+ 							UnlimitedStock = true,
+ 						},
+-						{
+-							Template = "bandage",
+-							Price = 0,
+-							Amount = 9999,
+-							RelativeLoc = "2.21698, -0.7742748, 1.848999",
+-							UnlimitedStock = true,
++						{
++							Template = "bandage",
++							Price = 0,
++							Amount = 9999,
++							RelativeLoc = "2.21698, -0.7742748, 1.848999",
++							Rotation = "0, 0, 0",
++							UnlimitedStock = true,
+ 						},
+ 						{
+ 							Template = "rune_blank",
+@@ -79,21 +80,26 @@
+ 							UnlimitedStock = true,
+ 						},
+ 						{
+-							Template = "map_upper_plains",
+-							Price = 200,
+-							Amount = 50,
+-							RelativeLoc = "1.151978, 0.1327248, 1.096008",
+-							UnlimitedStock = true,
+-						},
+-						{
+-							Template = "pouch",
+-							Price = 0,
+-							UnlimitedStock = true,
+-						},
+-						{
+-							Template = "waterskin",
+-							Price = 0,
+-							UnlimitedStock = true,
++							Template = "map_upper_plains",
++							Price = 200,
++							Amount = 50,
++							RelativeLoc = "1.151978, 0.1327248, 1.096008",
++							Rotation = "0, 0, 0",
++							UnlimitedStock = true,
++						},
++						{
++							Template = "pouch",
++							Price = 0,
++							RelativeLoc = "0.35, 0.2, 0.45",
++							Rotation = "0, 0, 0",
++							UnlimitedStock = true,
++						},
++						{
++							Template = "waterskin",
++							Price = 0,
++							RelativeLoc = "1.15, 0.2, 0.45",
++							Rotation = "0, 0, 0",
++							UnlimitedStock = true,
+ 						},
+ 					},
+ 					NPCDialogue = {
+@@ -108,4 +114,4 @@
+ 		<BaseRunSpeed>1</BaseRunSpeed>
+ 		<MobileType>Friendly</MobileType>
+ 	</MobileComponent>
+-</ObjectTemplate>
+\ No newline at end of file
++</ObjectTemplate>
+diff --git a/templates/celador/cel_merchant_scribe.xml b/templates/celador/cel_merchant_scribe.xml
+index e6be202..059eb0a 100644
+--- a/templates/celador/cel_merchant_scribe.xml
++++ b/templates/celador/cel_merchant_scribe.xml
+@@ -87,20 +87,26 @@
+ 							Rotation = "90, 236.0758, 0",
+ 							UnlimitedStock = false,
+ 						},
+-						{
+-							Template = "tool_lute",
+-							Price = 0,
+-							UnlimitedStock = true,
+-						},
+-						{
+-							Template = "tool_flute",
+-							Price = 0,
+-							UnlimitedStock = true,
+-						},
+-						{
+-							Template = "tool_drum",
+-							Price = 0,
+-							UnlimitedStock = true,
++						{
++							Template = "tool_lute",
++							Price = 0,
++							RelativeLoc = "0.85, 1.0, 1.25",
++							Rotation = "0, 270, 0",
++							UnlimitedStock = true,
++						},
++						{
++							Template = "tool_flute",
++							Price = 0,
++							RelativeLoc = "0.85, 1.0, 0.25",
++							Rotation = "0, 270, 0",
++							UnlimitedStock = true,
++						},
++						{
++							Template = "tool_drum",
++							Price = 0,
++							RelativeLoc = "0.85, 1.0, -0.75",
++							Rotation = "0, 270, 0",
++							UnlimitedStock = true,
+ 						},
+ 					},
+ 					NPCDialogue = {
+@@ -120,4 +126,4 @@
+ 		<BaseRunSpeed>1</BaseRunSpeed>
+ 		<MobileType>Friendly</MobileType>
+ 	</MobileComponent>
+-</ObjectTemplate>
+\ No newline at end of file
++</ObjectTemplate>
+diff --git a/templates/celador/helm_carpenter.xml b/templates/celador/helm_carpenter.xml
+index f94495d..5aac529 100644
+--- a/templates/celador/helm_carpenter.xml
++++ b/templates/celador/helm_carpenter.xml
+@@ -72,11 +72,12 @@
+ 							UnlimitedStock = false,
+ 						},
+ 						{
+-					Template = "land_deed",
+-					Price = 0,
+-					Amount = 999,
+-						RelativeLoc = "7.181885, 0.9539413, -0.04504395",
+-						UnlimitedStock = true,
++					Template = "land_deed",
++					Price = 0,
++					Amount = 999,
++						RelativeLoc = "7.181885, 0.9539413, -0.04504395",
++						Rotation = "0, 0, 0",
++						UnlimitedStock = true,
+ 					},
+ 					{
+ 						DisplayTemplate = "bind_stone_display",
+@@ -115,22 +116,28 @@
+ 						UnlimitedStock = true,
+ 						},
+ 						{
+-							Template = "resource_boards",
+-							Price = 0,
+-							Amount = 50,
+-							UnlimitedStock = false,
++							Template = "resource_boards",
++							Price = 0,
++							Amount = 50,
++							RelativeLoc = "4.0, 0.95, -0.2",
++							Rotation = "0, 0, 0",
++							UnlimitedStock = false,
+ 						},
+ 						{
+-							Template = "resource_brick",
+-							Price = 0,
+-							Amount = 50,
+-							UnlimitedStock = false,
++							Template = "resource_brick",
++							Price = 0,
++							Amount = 50,
++							RelativeLoc = "5.0, 0.95, -0.2",
++							Rotation = "0, 0, 0",
++							UnlimitedStock = false,
+ 						},
+ 						{
+-							Template = "resource_iron",
+-							Price = 0,
+-							Amount = 50,
+-							UnlimitedStock = false,
++							Template = "resource_iron",
++							Price = 0,
++							Amount = 50,
++							RelativeLoc = "6.0, 0.95, -0.2",
++							Rotation = "0, 0, 0",
++							UnlimitedStock = false,
+ 						},
+ 					},
+ 				NPCDialogue = {
+@@ -158,4 +165,4 @@
+ 		<BaseRunSpeed>1</BaseRunSpeed>
+ 		<MobileType>Friendly</MobileType>
+ 	</MobileComponent>
+-</ObjectTemplate>
+\ No newline at end of file
++</ObjectTemplate>
+diff --git a/templates/celador/helm_merchant_general_store.xml b/templates/celador/helm_merchant_general_store.xml
+index 2b3880a..9d5b58c 100644
+--- a/templates/celador/helm_merchant_general_store.xml
++++ b/templates/celador/helm_merchant_general_store.xml
+@@ -88,14 +88,18 @@
+ 							UnlimitedStock = true,
+ 						},
+ 						{
+-							Template = "pouch",
+-							Price = 0,
+-							UnlimitedStock = true,
++							Template = "pouch",
++							Price = 0,
++							RelativeLoc = "7.2, 0.75, -1.4",
++							Rotation = "0, 0, 0",
++							UnlimitedStock = true,
+ 						},
+ 						{
+-							Template = "waterskin",
+-							Price = 0,
+-							UnlimitedStock = true,
++							Template = "waterskin",
++							Price = 0,
++							RelativeLoc = "8.2, 0.75, -1.4",
++							Rotation = "0, 0, 0",
++							UnlimitedStock = true,
+ 						},
+ 					},
+ 					NPCDialogue = {
+@@ -110,4 +114,4 @@
+ 		<BaseRunSpeed>1</BaseRunSpeed>
+ 		<MobileType>Friendly</MobileType>
+ 	</MobileComponent>
+-</ObjectTemplate>
+\ No newline at end of file
++</ObjectTemplate>
+diff --git a/templates/celador/helm_merchant_scribe.xml b/templates/celador/helm_merchant_scribe.xml
+index 6c8951b..88e5b0f 100644
+--- a/templates/celador/helm_merchant_scribe.xml
++++ b/templates/celador/helm_merchant_scribe.xml
+@@ -88,19 +88,25 @@
+ 							UnlimitedStock = false,
+ 						},
+ 						{
+-							Template = "tool_lute",
+-							Price = 0,
+-							UnlimitedStock = true,
++							Template = "tool_lute",
++							Price = 0,
++							RelativeLoc = "0.7, 0.92, 1.35",
++							Rotation = "0, 270, 0",
++							UnlimitedStock = true,
+ 						},
+ 						{
+-							Template = "tool_flute",
+-							Price = 0,
+-							UnlimitedStock = true,
++							Template = "tool_flute",
++							Price = 0,
++							RelativeLoc = "0.7, 0.92, 0.35",
++							Rotation = "0, 270, 0",
++							UnlimitedStock = true,
+ 						},
+ 						{
+-							Template = "tool_drum",
+-							Price = 0,
+-							UnlimitedStock = true,
++							Template = "tool_drum",
++							Price = 0,
++							RelativeLoc = "0.7, 0.92, -0.65",
++							Rotation = "0, 270, 0",
++							UnlimitedStock = true,
+ 						},
+ 					},
+ 					NPCDialogue = {
+@@ -120,4 +126,4 @@
+ 		<BaseRunSpeed>1</BaseRunSpeed>
+ 		<MobileType>Friendly</MobileType>
+ 	</MobileComponent>
+-</ObjectTemplate>
+\ No newline at end of file
++</ObjectTemplate>
+diff --git a/templates/celador/pyros_carpenter.xml b/templates/celador/pyros_carpenter.xml
+index 2ecf452..c70a987 100644
+--- a/templates/celador/pyros_carpenter.xml
++++ b/templates/celador/pyros_carpenter.xml
+@@ -66,11 +66,12 @@
+ 							UnlimitedStock = false,
+ 						},
+ 						{
+-						Template = "land_deed",
+-						Price = 0,
+-						Amount = 999,
+-						RelativeLoc = "-5.4021, 0.6817703, -2.916992",
+-						UnlimitedStock = true,
++					Template = "land_deed",
++					Price = 0,
++					Amount = 999,
++						RelativeLoc = "-5.4021, 0.6817703, -2.916992",
++						Rotation = "0, 270, 0",
++						UnlimitedStock = true,
+ 					},
+ 					{
+ 						DisplayTemplate = "bind_stone_display",
+@@ -109,22 +110,28 @@
+ 						UnlimitedStock = true,
+ 						},
+ 						{
+-							Template = "resource_boards",
+-							Price = 0,
+-							Amount = 50,
+-							UnlimitedStock = false,
++							Template = "resource_boards",
++							Price = 0,
++							Amount = 50,
++							RelativeLoc = "-5.5, 0.7, -1.5",
++							Rotation = "0, 270, 0",
++							UnlimitedStock = false,
+ 						},
+ 						{
+-							Template = "resource_brick",
+-							Price = 0,
+-							Amount = 50,
+-							UnlimitedStock = false,
++							Template = "resource_brick",
++							Price = 0,
++							Amount = 50,
++							RelativeLoc = "-6.5, 0.7, -1.5",
++							Rotation = "0, 270, 0",
++							UnlimitedStock = false,
+ 						},
+ 						{
+-							Template = "resource_iron",
+-							Price = 0,
+-							Amount = 50,
+-							UnlimitedStock = false,
++							Template = "resource_iron",
++							Price = 0,
++							Amount = 50,
++							RelativeLoc = "-7.5, 0.7, -1.5",
++							Rotation = "0, 270, 0",
++							UnlimitedStock = false,
+ 						},
+ 					},
+ 				NPCDialogue = {
+@@ -152,4 +159,4 @@
+ 		<BaseRunSpeed>1</BaseRunSpeed>
+ 		<MobileType>Friendly</MobileType>
+ 	</MobileComponent>
+-</ObjectTemplate>
+\ No newline at end of file
++</ObjectTemplate>
+diff --git a/templates/celador/pyros_merchant_general_store.xml b/templates/celador/pyros_merchant_general_store.xml
+index f6cfdfd..139dbc4 100644
+--- a/templates/celador/pyros_merchant_general_store.xml
++++ b/templates/celador/pyros_merchant_general_store.xml
+@@ -82,14 +82,18 @@
+ 							UnlimitedStock = true,
+ 						},
+ 						{
+-							Template = "pouch",
+-							Price = 0,
+-							UnlimitedStock = true,
++							Template = "pouch",
++							Price = 0,
++							RelativeLoc = "3.4, 0.94, -1.95",
++							Rotation = "0, 0, 0",
++							UnlimitedStock = true,
+ 						},
+ 						{
+-							Template = "waterskin",
+-							Price = 0,
+-							UnlimitedStock = true,
++							Template = "waterskin",
++							Price = 0,
++							RelativeLoc = "4.4, 0.94, -1.95",
++							Rotation = "0, 0, 0",
++							UnlimitedStock = true,
+ 						},
+ 					},
+ 					NPCDialogue = {
+@@ -104,4 +108,4 @@
+ 		<BaseRunSpeed>1</BaseRunSpeed>
+ 		<MobileType>Friendly</MobileType>
+ 	</MobileComponent>
+-</ObjectTemplate>
+\ No newline at end of file
++</ObjectTemplate>
+diff --git a/templates/celador/pyros_scribe.xml b/templates/celador/pyros_scribe.xml
+index ef6b794..8c17971 100644
+--- a/templates/celador/pyros_scribe.xml
++++ b/templates/celador/pyros_scribe.xml
+@@ -88,19 +88,25 @@
+ 							UnlimitedStock = false,
+ 						},
+ 						{
+-							Template = "tool_lute",
+-							Price = 0,
+-							UnlimitedStock = true,
++							Template = "tool_lute",
++							Price = 0,
++							RelativeLoc = "0.75, 0.92, 1.4",
++							Rotation = "0, 270, 0",
++							UnlimitedStock = true,
+ 						},
+ 						{
+-							Template = "tool_flute",
+-							Price = 0,
+-							UnlimitedStock = true,
++							Template = "tool_flute",
++							Price = 0,
++							RelativeLoc = "0.75, 0.92, 0.4",
++							Rotation = "0, 270, 0",
++							UnlimitedStock = true,
+ 						},
+ 						{
+-							Template = "tool_drum",
+-							Price = 0,
+-							UnlimitedStock = true,
++							Template = "tool_drum",
++							Price = 0,
++							RelativeLoc = "0.75, 0.92, -0.6",
++							Rotation = "0, 270, 0",
++							UnlimitedStock = true,
+ 						},
+ 					},
+ 					NPCDialogue = {
+@@ -120,4 +126,4 @@
+ 		<BaseRunSpeed>1</BaseRunSpeed>
+ 		<MobileType>Friendly</MobileType>
+ 	</MobileComponent>
+-</ObjectTemplate>
+\ No newline at end of file
++</ObjectTemplate>
+diff --git a/templates/celador/val_carpenter.xml b/templates/celador/val_carpenter.xml
+index 537c10e..1855ddf 100644
+--- a/templates/celador/val_carpenter.xml
++++ b/templates/celador/val_carpenter.xml
+@@ -110,22 +110,28 @@
+ 						UnlimitedStock = true,
+ 						},
+ 						{
+-							Template = "resource_boards",
+-							Price = 0,
+-							Amount = 50,
+-							UnlimitedStock = false,
++							Template = "resource_boards",
++							Price = 0,
++							Amount = 50,
++							RelativeLoc = "1.8, 0.68, 3.5",
++							Rotation = "0, 270, 0",
++							UnlimitedStock = false,
+ 						},
+ 						{
+-							Template = "resource_brick",
+-							Price = 0,
+-							Amount = 50,
+-							UnlimitedStock = false,
++							Template = "resource_brick",
++							Price = 0,
++							Amount = 50,
++							RelativeLoc = "1.8, 0.68, 4.5",
++							Rotation = "0, 270, 0",
++							UnlimitedStock = false,
+ 						},
+ 						{
+-							Template = "resource_iron",
+-							Price = 0,
+-							Amount = 50,
+-							UnlimitedStock = false,
++							Template = "resource_iron",
++							Price = 0,
++							Amount = 50,
++							RelativeLoc = "1.8, 0.68, 5.5",
++							Rotation = "0, 270, 0",
++							UnlimitedStock = false,
+ 						},
+ 					},
+ 				NPCDialogue = {
+@@ -153,4 +159,4 @@
+ 		<BaseRunSpeed>1</BaseRunSpeed>
+ 		<MobileType>Friendly</MobileType>
+ 	</MobileComponent>
+-</ObjectTemplate>
+\ No newline at end of file
++</ObjectTemplate>
+diff --git a/templates/celador/val_merchant.xml b/templates/celador/val_merchant.xml
+index fd4179f..fdf365f 100644
+--- a/templates/celador/val_merchant.xml
++++ b/templates/celador/val_merchant.xml
+@@ -93,14 +93,18 @@
+ 							UnlimitedStock = true,
+ 						},
+ 						{
+-							Template = "pouch",
+-							Price = 0,
+-							UnlimitedStock = true,
++							Template = "pouch",
++							Price = 0,
++							RelativeLoc = "3.0, 0.91, -1.4",
++							Rotation = "0, 0, 0",
++							UnlimitedStock = true,
+ 						},
+ 						{
+-							Template = "waterskin",
+-							Price = 0,
+-							UnlimitedStock = true,
++							Template = "waterskin",
++							Price = 0,
++							RelativeLoc = "4.0, 0.91, -1.4",
++							Rotation = "0, 0, 0",
++							UnlimitedStock = true,
+ 						},
+ 					},
+ 					NPCDialogue = {
+@@ -115,4 +119,4 @@
+ 		<BaseRunSpeed>1</BaseRunSpeed>
+ 		<MobileType>Friendly</MobileType>
+ 	</MobileComponent>
+-</ObjectTemplate>
+\ No newline at end of file
++</ObjectTemplate>
+diff --git a/templates/celador/val_scribe.xml b/templates/celador/val_scribe.xml
+index e79331a..0f211a9 100644
+--- a/templates/celador/val_scribe.xml
++++ b/templates/celador/val_scribe.xml
+@@ -88,19 +88,25 @@
+ 							UnlimitedStock = false,
+ 						},
+ 						{
+-							Template = "tool_lute",
+-							Price = 0,
+-							UnlimitedStock = true,
++							Template = "tool_lute",
++							Price = 0,
++							RelativeLoc = "-0.6, 0.95, 0.2",
++							Rotation = "0, 315, 0",
++							UnlimitedStock = true,
+ 						},
+ 						{
+-							Template = "tool_flute",
+-							Price = 0,
+-							UnlimitedStock = true,
++							Template = "tool_flute",
++							Price = 0,
++							RelativeLoc = "0.1, 0.95, 0.9",
++							Rotation = "0, 315, 0",
++							UnlimitedStock = true,
+ 						},
+ 						{
+-							Template = "tool_drum",
+-							Price = 0,
+-							UnlimitedStock = true,
++							Template = "tool_drum",
++							Price = 0,
++							RelativeLoc = "0.8, 0.95, 1.6",
++							Rotation = "0, 315, 0",
++							UnlimitedStock = true,
+ 						},
+ 					},
+ 					NPCDialogue = {
+@@ -120,4 +126,4 @@
+ 		<BaseRunSpeed>1</BaseRunSpeed>
+ 		<MobileType>Friendly</MobileType>
+ 	</MobileComponent>
+-</ObjectTemplate>
+\ No newline at end of file
++</ObjectTemplate>

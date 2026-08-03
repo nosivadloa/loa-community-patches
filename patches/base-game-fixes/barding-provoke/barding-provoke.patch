@@ -1,0 +1,282 @@
+diff --git a/scripts/globals/helpers/skills.lua b/scripts/globals/helpers/skills.lua
+index a385073..384fa4c 100644
+--- a/scripts/globals/helpers/skills.lua
++++ b/scripts/globals/helpers/skills.lua
+@@ -209,13 +209,13 @@ end
+ -- @param difficulty double(optional) will use skillLevel as difficulty if not provided.
+ -- @param skipGains boolean(optional) If true, no skill/stat gains will be calculated.
+ -- @return true if success
+-function CheckSkill( mobileObj, skillName, difficulty, skipGains, skillDictionary )
++function CheckSkill( mobileObj, skillName, difficulty, skipGains, skillDictionary, gainMultiplier, gainBonusLabel )
+ 	local skillLevel = GetSkillLevel(mobileObj, skillName, skillDictionary, true)
+ 	if ( difficulty == nil ) then
+ 		difficulty = skillLevel
+ 	end
+ 	-- Pass `difficulty` through so the skill-check log can show it for the player.
+-	return CheckSkillChance( mobileObj, skillName, skillLevel, SkillValueMinMax( skillLevel, difficulty - 25, difficulty + 25 ), skipGains, skillDictionary, difficulty )
++	return CheckSkillChance( mobileObj, skillName, skillLevel, SkillValueMinMax( skillLevel, difficulty - 25, difficulty + 25 ), skipGains, skillDictionary, difficulty, gainMultiplier, gainBonusLabel )
+ end
+ 
+ --- Sends a per-check log line to the player's "skillcheck" chat tab.
+@@ -348,7 +348,7 @@ end
+ -- @param chance double(optional) Percent based between 0 and 1, if not provided it will use the skill level as the percent, for example 40 skill is 40% chance.
+ -- @param skipGains boolean(optional) If true, no skill/stat gains will be calculated.
+ -- @return true if success
+-function CheckSkillChance( mobileObj, skillName, skillLevel, chance, skipGains, skillDictionary, difficulty )
++function CheckSkillChance( mobileObj, skillName, skillLevel, chance, skipGains, skillDictionary, difficulty, gainMultiplier, gainBonusLabel )
+ 
+ 	-- cache some global variables for quicker indexing
+ 	local ss = ServerSettings
+@@ -475,14 +475,21 @@ function CheckSkillChance( mobileObj, skillName, skillLevel, chance, skipGains,
+ 				local regionalMult, globalMult = GetSkillGainBonusMultipliers()
+ 				local gainFactorBase = ServerSettings.Skills.GainFactor or 1
+ 				local serverGainFactor = regionalMult * globalMult * gainFactorBase
+-				local finalGain = gc * serverGainFactor
++				local actionGainMultiplier = tonumber(gainMultiplier) or 1
++				if actionGainMultiplier < 0 then actionGainMultiplier = 0 end
++				local finalGain = gc * serverGainFactor * actionGainMultiplier
+ 
+ 				if ( regionalMult > 1.0001 ) then
+ 					table.insert(bonuses, string.format("Region +%d%%", bonusPctFromMult(regionalMult)))
+ 				end
+-				if ( globalMult > 1.0001 ) then
+-					table.insert(bonuses, string.format("Server Bonus +%d%%", bonusPctFromMult(globalMult)))
+-				end
++				if ( globalMult > 1.0001 ) then
++					table.insert(bonuses, string.format("Server Bonus +%d%%", bonusPctFromMult(globalMult)))
++				end
++				if ( actionGainMultiplier > 1.0001 ) then
++					table.insert(bonuses, string.format("%s +%d%%",
++						gainBonusLabel or "Action Practice",
++						bonusPctFromMult(actionGainMultiplier)))
++				end
+ 
+ 				-- Cap gain chance at 100%. Anything above is functionally
+ 				-- identical (Success(chance) treats >=1 as auto-success) and
+diff --git a/scripts/globals/mobile_effects/skills/bard/provoke.lua b/scripts/globals/mobile_effects/skills/bard/provoke.lua
+index fde4fc0..ff1021d 100644
+--- a/scripts/globals/mobile_effects/skills/bard/provoke.lua
++++ b/scripts/globals/mobile_effects/skills/bard/provoke.lua
+@@ -1,7 +1,59 @@
+-MobileEffectLibrary.Provoke = 
+-{
+-
+-	OnEnterState = function(self,root,target,args)
++MobileEffectLibrary.Provoke = 
++{
++	GetBardingDifficulty = function(self,target)
++		if not target or not target:IsValid() then return nil end
++
++		local configuredDifficulty = tonumber(target:GetObjVar("BardingDifficulty"))
++		-- Preserve deliberately authored non-default values. Most stock
++		-- creatures inherit 100, however, so that value must be tiered from
++		-- their actual combat power instead of making chickens equal dragons.
++		if configuredDifficulty and configuredDifficulty > 0 and configuredDifficulty < 100 then
++			return configuredDifficulty
++		end
++
++		local attack = tonumber(target:GetObjVar("Attack")) or 0
++		local maximumHealth = 0
++		if GetMaxHealth then
++			local ok, value = pcall(function() return GetMaxHealth(target) end)
++			if ok then maximumHealth = tonumber(value) or 0 end
++		end
++
++		local attackDifficulty = 100
++		if attack <= 2 then
++			attackDifficulty = 10
++		elseif attack <= 8 then
++			attackDifficulty = 30
++		elseif attack <= 16 then
++			attackDifficulty = 45
++		elseif attack <= 30 then
++			attackDifficulty = 60
++		elseif attack <= 48 then
++			attackDifficulty = 80
++		end
++
++		local healthDifficulty = 100
++		if maximumHealth <= 50 then
++			healthDifficulty = 10
++		elseif maximumHealth <= 250 then
++			healthDifficulty = 30
++		elseif maximumHealth <= 600 then
++			healthDifficulty = 45
++		elseif maximumHealth <= 1200 then
++			healthDifficulty = 60
++		elseif maximumHealth <= 2200 then
++			healthDifficulty = 80
++		end
++
++		-- If an engine object does not expose either power value, retain its
++		-- configured fallback instead of accidentally treating it as harmless.
++		if attack <= 0 and maximumHealth <= 0 then
++			return configuredDifficulty or 100
++		end
++
++		return math.max(attackDifficulty, healthDifficulty)
++	end,
++
++	OnEnterState = function(self,root,target,args)
+ 		local mountObj = GetMount(self.ParentObj)
+ 		if ( mountObj ~= nil ) then
+ 			DismountMobile(self.ParentObj, mountObj)
+@@ -105,9 +157,10 @@ MobileEffectLibrary.Provoke =
+             self.ParentObj:SystemMessage("You could use more practice.","info")
+         end
+         --skill gain
+-        CheckSkillChance(self.ParentObj,"MusicianshipSkill", (100 - musicSkill) / 100)
+-        --no more playing for 9 seconds
+-        self.ParentObj:ScheduleTimerDelay(TimeSpan.FromSeconds(9), "PlayedInstrumentRecently")
++        CheckSkillChance(self.ParentObj, "MusicianshipSkill", musicSkill, (100 - musicSkill) / 100)
++        -- Keep the instrument lockout aligned with Provoke's displayed
++        -- one-second ability cooldown.
++        self.ParentObj:ScheduleTimerDelay(TimeSpan.FromSeconds(1), "PlayedInstrumentRecently")
+         --to trigger provocation stuff
+         CallFunctionDelayed(delay, function ( ... )
+         	self:FinishProvoke(root,success)
+@@ -115,35 +168,22 @@ MobileEffectLibrary.Provoke =
+ 	end,
+ 
+ 	FinishProvoke = function (self,root,success)
+-		if not(self.Target:IsValid() or self.ParentObj:GetLoc():Distance(self.Target:GetLoc()) > self.ProvokeRange ) then    
+-			self.ParentObj:SystemMessage("Your target is no longer in range.","info")
+-			EndMobileEffect(root)
+-			return
+-		end
+-
+-		if(success == true) then
+-			--well played
+-			--Check Provocation skill
+-			local bardSkill = GetSkillLevel(self.ParentObj,"ProvocationSkill") or 0
+-			if(bardSkill < 5) then
+-				bardSkill = 5
+-			end
+-			if(math.random(0, 109) < bardSkill) then
+-				--success all around, ask client who should mTarget attack
+-				self.ParentObj:SystemMessage("Select the target you want your creature to attack.","info")
+-				self.ParentObj:RequestClientTargetGameObj(self.ParentObj, "EndProvokeTarget")
+-
+-				RegisterSingleEventHandler(EventType.ClientTargetGameObjResponse,"EndProvokeTarget",function (attackTarget)
+-					self:EndProvokeTarget(root,attackTarget)					
+-		        end)
+-			else
+-				--failed provocation Check
+-				self.Target:NpcSpeech(self.Target:GetName() .. " becomes enraged.")
+-				EndMobileEffect(root)
+-				return
+-			end
+-			CheckSkill(self.ParentObj,"ProvocationSkill", 0) -- noobie gains
+-	    else
++		if not self.Target or not self.Target:IsValid()
++			or self.ParentObj:GetLoc():Distance(self.Target:GetLoc()) > self.ProvokeRange then
++			self.ParentObj:SystemMessage("Your target is no longer in range.","info")
++			EndMobileEffect(root)
++			return
++		end
++
++		if(success == true) then
++			-- A successful performance always advances to the second target.
++			-- Barding is checked once after both creature difficulties are known.
++			self.ParentObj:SystemMessage("Select the target you want your creature to attack.","info")
++			RegisterSingleEventHandler(EventType.ClientTargetGameObjResponse,"EndProvokeTarget",function (attackTarget)
++				self:EndProvokeTarget(root,attackTarget)
++	        end)
++			self.ParentObj:RequestClientTargetGameObj(self.ParentObj, "EndProvokeTarget")
++	    else
+ 	        --failed to play instrument well
+ 			self.ParentObj:SystemMessage(self.Target:GetName() .. " was not swayed by your melody.","info")
+ 			EndMobileEffect(root)
+@@ -151,8 +191,21 @@ MobileEffectLibrary.Provoke =
+ 	    end
+ 	end,
+ 
+-	EndProvokeTarget = function (self,root,attackTarget)
+-		if(attackTarget == self.Target) then
++	EndProvokeTarget = function (self,root,attackTarget)
++		if not attackTarget or not attackTarget:IsValid() then
++			self.ParentObj:SystemMessage("Provoke cancelled.","info")
++			EndMobileEffect(root)
++			return
++		end
++
++		if not self.Target or not self.Target:IsValid() or IsDead(self.Target)
++			or self.ParentObj:GetLoc():Distance(self.Target:GetLoc()) > self.ProvokeRange then
++			self.ParentObj:SystemMessage("Your first target is no longer in range.","info")
++			EndMobileEffect(root)
++			return
++		end
++
++		if(attackTarget == self.Target) then
+ 			self.ParentObj:SystemMessage("Cannot provoke something to attack itself.","info")
+ 			EndMobileEffect(root)
+ 			return
+@@ -160,21 +213,38 @@ MobileEffectLibrary.Provoke =
+ 
+ 		local canSee = ShouldSeeCloakedObject(self.ParentObj, attackTarget)
+ 		local isValid = ValidCombatTarget(self.ParentObj, attackTarget)
+-		local attackDifficulty = (attackTarget:IsPlayer() and 100) or attackTarget:GetObjVar("BardingDifficulty")
+-
+-		if not canSee or not isValid or not attackDifficulty then	    
+-	    	self.ParentObj:SystemMessage("Cannot provoke something to attack that.","info")
+-	    	EndMobileEffect(root)
+-			return
+-	    end
++		local attackDifficulty = (attackTarget:IsPlayer() and 100) or self:GetBardingDifficulty(attackTarget)
+ 
+-	    local provoDifficulty = self.Target:GetObjVar('BardingDifficulty') + attackDifficulty / 2
+-	    if(CheckSkill(self.ParentObj, "ProvocationSkill", provoDifficulty)) then
+-	    	DebugMessage("GOOOOOOOOOOOOO")
+-	    	self.Target:SendMessage("AddThreat", self.ParentObj, 200)
+-            self.Target:SendMessage("AddAggro", self.ParentObj, 200)
+-	    	self.Target:SendMessage("AttackEnemy", attackTarget, true)
+-	    else
++		if not canSee or not isValid or not attackDifficulty then	    
++	    	self.ParentObj:SystemMessage("Cannot provoke something to attack that.","info")
++	    	EndMobileEffect(root)
++			return
++	    end
++
++		if self.ParentObj:GetLoc():Distance(attackTarget:GetLoc()) > self.ProvokeRange then
++			self.ParentObj:SystemMessage("That target is too far away.","info")
++			EndMobileEffect(root)
++			return
++		end
++
++		if not self.ParentObj:HasLineOfSightToObj(attackTarget, ServerSettings.Combat.LOSEyeLevel) then
++			self.ParentObj:SystemMessage("You cannot see that target!","info")
++			EndMobileEffect(root)
++			return
++		end
++
++		local firstDifficulty = self:GetBardingDifficulty(self.Target)
++		if not firstDifficulty then
++			self.ParentObj:SystemMessage("Cannot determine that creature's Barding difficulty.","info")
++			EndMobileEffect(root)
++			return
++		end
++	    local provoDifficulty = (firstDifficulty + attackDifficulty) / 2
++	    if(CheckSkill(self.ParentObj, "BardSkill", provoDifficulty, nil, nil, self.BardingGainMultiplier, "Provoke Practice")) then
++	    	self.Target:SendMessage("AddThreat", attackTarget, 200)
++	    	self.Target:SendMessage("AttackEnemy", attackTarget, true)
++			self.ParentObj:SystemMessage(self.Target:GetName() .. " attacks " .. attackTarget:GetName() .. "!","info")
++	    else
+ 	    	self.ParentObj:SystemMessage(self.Target:GetName() .. " was not swayed by your melody.","info")
+ 	    end
+ 
+@@ -194,8 +264,9 @@ MobileEffectLibrary.Provoke =
+ 		do return end
+ 	end,
+ 
+-	PulseFrequency = TimeSpan.FromSeconds(2),
+-
+-	Target = nil,
+-	ProvokeRange = 15
+-}
+\ No newline at end of file
++	PulseFrequency = TimeSpan.FromSeconds(2),
++
++	BardingGainMultiplier = 2,
++	Target = nil,
++	ProvokeRange = 15
++}

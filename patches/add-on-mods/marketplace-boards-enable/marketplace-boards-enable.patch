@@ -1,0 +1,16 @@
+diff --git a/scripts/globals/mobile_effects/players/marketplace_board.lua b/scripts/globals/mobile_effects/players/marketplace_board.lua
+index dbdcbfa..63e4b27 100644
+--- a/scripts/globals/mobile_effects/players/marketplace_board.lua
++++ b/scripts/globals/mobile_effects/players/marketplace_board.lua
+@@ -4,11 +4,6 @@ MobileEffectLibrary.MarketplaceBoard =
+         self._WindowID = "TownshipBoard" --..uuid()
+         self._MarketplaceBoardObj = target
+ 
+-        -- Boards are disabled for now
+-        self._Message = "Marketplace boards are disabled for now."
+-        EndMobileEffect(root)
+-        do return false end
+-
+         -- Make sure we found the township board near us.
+         if( self._MarketplaceBoardObj == nil ) then
+             self._Message = "You are not close enough to the township board."
