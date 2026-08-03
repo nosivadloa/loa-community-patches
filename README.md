@@ -3,7 +3,9 @@
 Small, reviewable fixes for Legends of Aria server developers and shard
 operators.
 
-Each patch lives in its own folder under [`patches/`](patches/) and includes:
+Each patch lives in its own folder under either
+[`patches/base-game-fixes/`](patches/base-game-fixes/) or
+[`patches/add-on-mods/`](patches/add-on-mods/) and includes:
 
 - a unified diff that can be reviewed before application;
 - installation and compatibility notes;
@@ -12,10 +14,9 @@ Each patch lives in its own folder under [`patches/`](patches/) and includes:
 
 ## Available patches
 
-The repository currently contains fourteen independently documented patches
-for achievements, professions, Barding, merchants, skill/stat scaling, UI,
-world interaction, and shard compatibility. See the [patch index](patches/)
-for descriptions and links.
+The repository currently contains nine base-game fixes and five add-on mods.
+See the [categorized patch index](patches/) for descriptions, compatibility
+notes, and links.
 
 ## Applying a patch
 
