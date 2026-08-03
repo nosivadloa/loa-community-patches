@@ -12,7 +12,7 @@ Each patch lives in its own folder under [`patches/`](patches/) and includes:
 
 ## Available patches
 
-The repository currently contains eight independently documented patches for
+The repository currently contains nine independently documented patches for
 achievements, professions, Barding, merchants, skill/stat scaling, and the
 skillbook UI. See the [patch index](patches/) for descriptions and links.
 

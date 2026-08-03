@@ -3,6 +3,10 @@
 Repairs quantity selection, interaction-range checks, and multi-item stock
 consumption in the merchant shop UI.
 
+For quantity controls without the interaction-range changes, use the narrower
+[`merchant-quantity-selection`](../merchant-quantity-selection/) patch. Do not
+apply both because their quantity hunks overlap.
+
 ## Symptoms
 
 - Quantity text fields in object-bound shop windows do not reliably reach the
