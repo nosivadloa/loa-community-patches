@@ -14,7 +14,7 @@ Each patch lives in its own folder under either
 
 ## Available patches
 
-The repository currently contains nine base-game fixes and five add-on mods.
+The repository currently contains nine base-game fixes and six add-on mods.
 See the [categorized patch index](patches/) for descriptions, compatibility
 notes, and links.
 

@@ -32,3 +32,4 @@ or add new content. Review their gameplay and economy impact before deployment.
 | [Enable marketplace boards](add-on-mods/marketplace-boards-enable/) | Removes the stock guard that disables township marketplace-board functionality. |
 | [Unrestricted sewer teleporter](add-on-mods/unrestricted-sewer-teleporter/) | Removes the legacy profession-selection gate from sewer teleporters. |
 | [Valus treasure-map destination exclusion](add-on-mods/valus-treasure-map-destination-fix/) | Excludes an unsuitable Valus town region from stock treasure and SOS map pools. |
+| [Vendor bank-gold payments](add-on-mods/vendor-bank-gold-payments/) | Allows NPC and player-vendor purchases to use backpack gold, bank gold, or both balances together. |
