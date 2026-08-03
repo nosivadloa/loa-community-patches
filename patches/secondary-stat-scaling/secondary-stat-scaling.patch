@@ -1,0 +1,22 @@
+diff --git a/scripts/globals/helpers/skills.lua b/scripts/globals/helpers/skills.lua
+index a385073..d213831 100644
+--- a/scripts/globals/helpers/skills.lua
++++ b/scripts/globals/helpers/skills.lua
+@@ -512,8 +512,15 @@ function CheckSkillChance( mobileObj, skillName, skillLevel, chance, skipGains,
+ 			if (
+ 				realStatLevel < ss.Stats.IndividualPlayerStatCap
+ 				and
+-				-- "arbitrary check to insure that players stats are just scaling to some degree with the age of the character a little bit" - Miphon
+-				( i ~= 2 or (realStatLevel*2 <= skillTable.SkillLevel) )
++				-- Scale secondary-stat eligibility across the configured caps.
++				-- The base realStatLevel*2 check assumed a 50 stat / 100 skill
++				-- scale and made Wisdom and Will impossible to train past 50
++				-- when a shard raises the individual stat cap.
++				( i ~= 2 or (
++					realStatLevel
++					* (ss.Skills.PlayerSkillCap.Single / ss.Stats.IndividualPlayerStatCap)
++					<= skillTable.SkillLevel
++				) )
+ 			) then
+ 				-- (increasing difficulty near stat cap)
+ 				local gainFactor = m.max(0.025, 1 - (realStatLevel / ss.Stats.TotalPlayerStatsCap))

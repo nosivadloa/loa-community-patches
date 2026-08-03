@@ -12,14 +12,9 @@ Each patch lives in its own folder under [`patches/`](patches/) and includes:
 
 ## Available patches
 
-### Shared achievement-type claim fix
-
-Fixes persistent achievement notifications, unresponsive Mage/Evoker rows, and
-the missing Magery achievement icon when multiple title series share one
-achievement type.
-
-- [Documentation](patches/shared-achievement-type-fix/README.md)
-- [Unified diff](patches/shared-achievement-type-fix/loa-shared-achievement-type-fix.patch)
+The repository currently contains eight independently documented patches for
+achievements, professions, Barding, merchants, skill/stat scaling, and the
+skillbook UI. See the [patch index](patches/) for descriptions and links.
 
 ## Applying a patch
 

@@ -1,0 +1,970 @@
+diff --git a/scripts/ai_prestige_trainer.lua b/scripts/ai_prestige_trainer.lua
+index 4b2d39a..e49f4b8 100644
+--- a/scripts/ai_prestige_trainer.lua
++++ b/scripts/ai_prestige_trainer.lua
+@@ -20,11 +20,17 @@ if ( prestigeClass ) then
+             {"MageProfessionTierOne", 1},
+             {"MageProfessionTierOne", 2},
+             {"MageProfessionTierOne", 4},
+-            {"MageProfessionTierOne", 7},
+-            {"MageDungeonTour", 1},
+-            {"MageDungeonTour", 3},
+-            {"MageDungeonTour", 5},
+-        }
++            {"MageProfessionTierOne", 7},
++            {"MageDungeonTour", 1},
++            {"MageDungeonTour", 3},
++            {"MageDungeonTour", 5},
++            {"MageProfessionTierTwo", 1},
++            {"MageProfessionTierTwo", 4},
++            {"MageProfessionTierTwo", 6},
++            {"MageProfessionTierThree", 1},
++            {"MageProfessionTierThree", 10},
++            {"MageProfessionTierFour", 1},
++        }
+     elseif ( prestigeClass == "Fighter" ) then
+         AI.QuestStepsInvolvedIn = {
+             {"FighterProfessionIntro", 1},
+@@ -36,19 +42,32 @@ if ( prestigeClass ) then
+             {"FighterProfessionTierOne", 2},
+             {"FighterProfessionTierOne", 4},
+             {"FighterProfessionTierOne", 7},
+-            {"FighterDungeonTour", 1},
+-            {"FighterDungeonTour", 3},
+-            {"FighterDungeonTour", 5},
+-        }
++            {"FighterDungeonTour", 1},
++            {"FighterDungeonTour", 3},
++            {"FighterDungeonTour", 5},
++            {"FighterProfessionTierTwo", 1},
++            {"FighterProfessionTierTwo", 4},
++            {"FighterProfessionTierTwo", 6},
++            {"FighterProfessionTierThree", 1},
++            {"FighterProfessionTierThree", 10},
++            {"FighterProfessionTierFour", 1},
++        }
+     elseif ( prestigeClass == "Rogue" ) then
+         AI.QuestStepsInvolvedIn = {
+             {"RogueProfessionIntro", 1},
+             {"RogueProfessionIntro", 2},
+             {"RogueProfessionIntro", 3},
+-            {"RogueProfessionTierOne", 1},
+-            {"RogueProfessionTierOne", 2},
+-            {"RogueProfessionTierOne", 5},
+-        }
++            {"RogueProfessionTierOne", 1},
++            {"RogueProfessionTierOne", 2},
++            {"RogueProfessionTierOne", 5},
++            {"RogueProfessionTierTwo", 1},
++            {"RogueProfessionTierTwo", 4},
++            {"RogueProfessionTierThree", 1},
++            {"RogueProfessionTierThree", 2},
++            {"RogueProfessionTierThree", 6},
++            {"RogueProfessionTierFour", 1},
++            {"RogueProfessionTierFour", 5},
++        }
+     end
+ end
+ 
+diff --git a/scripts/globals/static_data/quests/AlchemistProfessionTierFour.lua b/scripts/globals/static_data/quests/AlchemistProfessionTierFour.lua
+index 98e12d3..183c97c 100644
+--- a/scripts/globals/static_data/quests/AlchemistProfessionTierFour.lua
++++ b/scripts/globals/static_data/quests/AlchemistProfessionTierFour.lua
+@@ -32,7 +32,6 @@ AllQuests.AlchemistProfessionTierFour = {
+         EndDialogue = { "[Alchemist IV] I'm not making 100 more potions.","Oh don't be like that. Plus we both know you'd make 100, 200, or 300 more if I asked you. But no, don't need that many. We have an order from wealthy militia patron that wants 50 Summon Mount potions." },
+         NextStep = 2,
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "AlchemistProfessionTierFour", 1},
+             --{"QuestActive", "AlchemistProfessionTierFour", false},
+             {"MinTimesQuestDone", "AlchemistProfessionTierThree", 1},
+@@ -106,4 +105,4 @@ AllQuests.AlchemistProfessionTierFour = {
+             {"TurnIn"},
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/AlchemistProfessionTierThree.lua b/scripts/globals/static_data/quests/AlchemistProfessionTierThree.lua
+index 4d933bf..7bd4a62 100644
+--- a/scripts/globals/static_data/quests/AlchemistProfessionTierThree.lua
++++ b/scripts/globals/static_data/quests/AlchemistProfessionTierThree.lua
+@@ -32,7 +32,6 @@ AllQuests.AlchemistProfessionTierThree = {
+         EndDialogue = { "[Alchemist III] I'm getting pretty good at\nmaking these potions.","Lets hold on there, I'll be judge of who's good or not. You just worry about filling orders. With that in mind can you get my 30 greater stamina potions." },
+         NextStep = 2,
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "AlchemistProfessionTierThree", 1},
+             --{"QuestActive", "AlchemistProfessionTierThree", false},
+             {"MinTimesQuestDone", "AlchemistProfessionTierTwo", 1},
+@@ -171,4 +170,4 @@ AllQuests.AlchemistProfessionTierThree = {
+             {"TurnIn"},
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/AlchemistProfessionTierTwo.lua b/scripts/globals/static_data/quests/AlchemistProfessionTierTwo.lua
+index 1716da7..5c579c7 100644
+--- a/scripts/globals/static_data/quests/AlchemistProfessionTierTwo.lua
++++ b/scripts/globals/static_data/quests/AlchemistProfessionTierTwo.lua
+@@ -37,7 +37,6 @@ AllQuests.AlchemistProfessionTierTwo = {
+         EndDialogue = {"[Alchemist II] I am ready for my next task.","Good, you've come at the right time too. The League of Explorers has comissioned the alchemist guild to procure stamina potions for their ranks. All of our order are required to pitch in, I would say 30 would do nicely."},
+         NextStep = 2,
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "AlchemistProfessionTierTwo", 1},
+             --{"QuestActive", "AlchemistProfessionTierTwo", false},
+             {"MinTimesQuestDone", "AlchemistProfessionTierOne", 1},
+@@ -222,4 +221,4 @@ AllQuests.AlchemistProfessionTierTwo = {
+             {"TakeItem", "potion_gmana", 30},
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/BardProfessionTierFour.lua b/scripts/globals/static_data/quests/BardProfessionTierFour.lua
+index 1d4536f..42991e0 100644
+--- a/scripts/globals/static_data/quests/BardProfessionTierFour.lua
++++ b/scripts/globals/static_data/quests/BardProfessionTierFour.lua
+@@ -35,7 +35,6 @@ AllQuests.BardProfessionTierFour = {
+         NextStep = 2,
+         EndDialogue = {"[Bard IV] I wish to confirm my grandmaster status.","You have come a long way. I would have you seek out the Mage Grandmaster in Oasis to begin this last step in your journey."},
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "BardProfessionTierFour", 1},
+             --{"QuestActive", "BardProfessionTierFour", false},
+             {"MinTimesQuestDone", "BardProfessionTierThree", 1},
+@@ -143,4 +142,4 @@ AllQuests.BardProfessionTierFour = {
+             },                
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/BardProfessionTierThree.lua b/scripts/globals/static_data/quests/BardProfessionTierThree.lua
+index 29befa7..f4536ff 100644
+--- a/scripts/globals/static_data/quests/BardProfessionTierThree.lua
++++ b/scripts/globals/static_data/quests/BardProfessionTierThree.lua
+@@ -36,7 +36,6 @@ AllQuests.BardProfessionTierThree = {
+         NextStep = 2,
+         EndDialogue = {"[Bard III] I'm ready for another journey.","That is well, you will need to visit Kato the Fighter Guildmaster. He can usually be found at the arena just outside of Eldier."},
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "BardProfessionTierThree", 1},
+             --{"QuestActive", "BardProfessionTierThree", false},
+             {"MinTimesQuestDone", "BardProfessionTierTwo", 1},
+@@ -144,4 +143,4 @@ AllQuests.BardProfessionTierThree = {
+             },                
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/BardProfessionTierTwo.lua b/scripts/globals/static_data/quests/BardProfessionTierTwo.lua
+index be19918..5e6167c 100644
+--- a/scripts/globals/static_data/quests/BardProfessionTierTwo.lua
++++ b/scripts/globals/static_data/quests/BardProfessionTierTwo.lua
+@@ -40,7 +40,6 @@ AllQuests.BardProfessionTierTwo = {
+         NextStep = 2,
+         EndDialogue = {"[Bard II] I am ready to improve.","Well then pack up your instruments. A bard is only as good as the stories he can tell. Go and visit Yewell Steeltounge outside Iris Cave."},
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "BardProfessionTierTwo", 1},
+             {"MinTimesQuestDone", "BardProfessionTierOne", 1},
+             {"Skill", "MusicianshipSkill", 50},
+@@ -193,4 +192,4 @@ AllQuests.BardProfessionTierTwo = {
+         },
+     },
+ 
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/CarpenterProfessionTierFour.lua b/scripts/globals/static_data/quests/CarpenterProfessionTierFour.lua
+index 2b06367..00ce858 100644
+--- a/scripts/globals/static_data/quests/CarpenterProfessionTierFour.lua
++++ b/scripts/globals/static_data/quests/CarpenterProfessionTierFour.lua
+@@ -36,7 +36,6 @@ AllQuests.CarpenterProfessionTierFour = {
+             --{"CarpenterProfessionTierFour", 1, false},
+         },
+         Requirements = {
+-            {"Disabled"},
+             {"Skill", "WoodsmithSkill", 100},
+             {"MaxTimesQuestDone", "CarpenterProfessionTierFour", 1},
+             {"MinTimesQuestDone", "CarpenterProfessionTierThree", 1},
+@@ -159,4 +158,4 @@ AllQuests.CarpenterProfessionTierFour = {
+             {"TakeItem", "artisan_crafting_commission_carpentry", 1},
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/CarpenterProfessionTierThree.lua b/scripts/globals/static_data/quests/CarpenterProfessionTierThree.lua
+index 3e7b980..5e78f4e 100644
+--- a/scripts/globals/static_data/quests/CarpenterProfessionTierThree.lua
++++ b/scripts/globals/static_data/quests/CarpenterProfessionTierThree.lua
+@@ -49,7 +49,6 @@ AllQuests.CarpenterProfessionTierThree = {
+             --{"CarpenterProfessionTierThree", 1, false},
+         },
+         Requirements = {
+-            {"Disabled"},
+             {"Skill", "WoodsmithSkill", 80},
+ 
+             {"MaxTimesQuestDone", "CarpenterProfessionTierThree", 1},
+@@ -236,4 +235,4 @@ AllQuests.CarpenterProfessionTierThree = {
+             end},
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/CarpenterProfessionTierTwo.lua b/scripts/globals/static_data/quests/CarpenterProfessionTierTwo.lua
+index 4273b18..8e0a7ef 100644
+--- a/scripts/globals/static_data/quests/CarpenterProfessionTierTwo.lua
++++ b/scripts/globals/static_data/quests/CarpenterProfessionTierTwo.lua
+@@ -41,7 +41,6 @@ AllQuests.CarpenterProfessionTierTwo = {
+             --{"CarpenterProfessionTierTwo", 1, false},
+         },
+         Requirements = {
+-            {"Disabled"},
+             {"Skill", "WoodsmithSkill", 50},
+ 
+             {"MaxTimesQuestDone", "CarpenterProfessionTierTwo", 1},
+@@ -207,4 +206,4 @@ AllQuests.CarpenterProfessionTierTwo = {
+             end},
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/ChefProfessionTierFour.lua b/scripts/globals/static_data/quests/ChefProfessionTierFour.lua
+index 5500a70..3af2071 100644
+--- a/scripts/globals/static_data/quests/ChefProfessionTierFour.lua
++++ b/scripts/globals/static_data/quests/ChefProfessionTierFour.lua
+@@ -28,7 +28,6 @@ AllQuests.ChefProfessionTierFour = {
+         EndDialogue = {"[Chef IV] I'd like to complete my last trial.","Very well, we are catering a banquet for an order of magi and they've requested Razor Fish and Eggplant you'll need about 40 of them."},
+         NextStep = 2,
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "ChefProfessionTierFour", 1},
+             --{"QuestActive", "ChefProfessionTierFour", false},
+             {"MinTimesQuestDone", "ChefProfessionTierThree", 1},
+@@ -46,7 +45,7 @@ AllQuests.ChefProfessionTierFour = {
+             {"Skill", "CookingSkill", 100},
+         },
+         QuestData = {
+-            Key = "ChefProfessionTierThree2",
++            Key = "ChefProfessionTierFour2",
+             Type = "Crafting",
+             QuestArgs = 
+             {
+@@ -78,4 +77,4 @@ AllQuests.ChefProfessionTierFour = {
+             {"TakeItem", "item_food_fishfilletrazoreggplant_banquet", 40},
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/ChefProfessionTierThree.lua b/scripts/globals/static_data/quests/ChefProfessionTierThree.lua
+index 47748c2..b00db7c 100644
+--- a/scripts/globals/static_data/quests/ChefProfessionTierThree.lua
++++ b/scripts/globals/static_data/quests/ChefProfessionTierThree.lua
+@@ -31,7 +31,6 @@ AllQuests.ChefProfessionTierThree = {
+         EndDialogue = {"[Chef III] I'm ready to take the next step.","This is good news, go get some cucumbers and return to me when you've prepared 20 cucumber banquets."},
+         NextStep = 2,
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "ChefProfessionTierThree", 1},
+             --{"QuestActive", "ChefProfessionTierThree", false},
+             {"MinTimesQuestDone", "ChefProfessionTierTwo", 1},
+@@ -123,4 +122,4 @@ AllQuests.ChefProfessionTierThree = {
+         },
+     },
+     
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/ChefProfessionTierTwo.lua b/scripts/globals/static_data/quests/ChefProfessionTierTwo.lua
+index fd5e63f..e9e0271 100644
+--- a/scripts/globals/static_data/quests/ChefProfessionTierTwo.lua
++++ b/scripts/globals/static_data/quests/ChefProfessionTierTwo.lua
+@@ -35,7 +35,6 @@ AllQuests.ChefProfessionTierTwo = {
+         EndDialogue = {"[Chef II] I seek more training as a cook.","Very good, that is the attitude you will need as being a chef is not as desserts and whipped toppings. Lets start with the basics of a accomplished chef, cook me up 10 Red-leaf Lettuce meals."},
+         NextStep = 2,
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "ChefProfessionTierTwo", 1},
+             --{"QuestActive", "ChefProfessionTierTwo", false},
+             {"MinTimesQuestDone", "ChefProfessionTierOne", 1},
+@@ -199,4 +198,4 @@ AllQuests.ChefProfessionTierTwo = {
+             {"TurnIn"},
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/FighterProfessionTierFour.lua b/scripts/globals/static_data/quests/FighterProfessionTierFour.lua
+index 00155df..fcacc0c 100644
+--- a/scripts/globals/static_data/quests/FighterProfessionTierFour.lua
++++ b/scripts/globals/static_data/quests/FighterProfessionTierFour.lua
+@@ -44,7 +44,6 @@ AllQuests.FighterProfessionTierFour = {
+         NextStep = 2,
+         EndDialogue = {"[Fighter IV] Tell me how to become a Grandmaster.","There is not much I can tell you. Go speak with Il-Ves in The Catacombs."},
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "FighterProfessionTierFour", 1},
+             --{"QuestActive", "FighterProfessionTierFour", false},
+             {"MinTimesQuestDone", "FighterProfessionTierThree", 1},
+@@ -213,4 +212,4 @@ AllQuests.FighterProfessionTierFour = {
+             },                
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/FighterProfessionTierThree.lua b/scripts/globals/static_data/quests/FighterProfessionTierThree.lua
+index b41f962..525b1ab 100644
+--- a/scripts/globals/static_data/quests/FighterProfessionTierThree.lua
++++ b/scripts/globals/static_data/quests/FighterProfessionTierThree.lua
+@@ -49,7 +49,6 @@ AllQuests.FighterProfessionTierThree = {
+         NextStep = 2,
+         EndDialogue = {"[Fighter III] Master Fighter.","Another Journeyman huh. You should take my advice and quit whilst you're ahead. No? Well head to Dungeon Ruin and seek out Bladius Dart - he'll break the good news."},
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "FighterProfessionTierThree", 1},
+             --{"QuestActive", "FighterProfessionTierThree", false},
+             {"MinTimesQuestDone", "FighterProfessionTierTwo", 1},
+@@ -208,7 +207,7 @@ AllQuests.FighterProfessionTierThree = {
+         Instructions = "Speak to [F2F5A9]Bladius Dart[-].",
+         MarkerLocs = {
+             --QuestMarkers.BladiusDart,
+-            QuestMarkers.RuinExit,
++            {-1183.18, 0, -1731.88},
+         },
+         NextStep = 11,
+         EndDialogue = {"[Fighter III] It is done.","A Crypt Dragon? The source of this evil must be uncovered and defeated. The Fighter's Guild will be sure to receive a commendation of your valor in my report. Return to the city speak with a trainer."},
+@@ -268,4 +267,4 @@ AllQuests.FighterProfessionTierThree = {
+             },                
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/FighterProfessionTierTwo.lua b/scripts/globals/static_data/quests/FighterProfessionTierTwo.lua
+index ec9348b..0d79233 100644
+--- a/scripts/globals/static_data/quests/FighterProfessionTierTwo.lua
++++ b/scripts/globals/static_data/quests/FighterProfessionTierTwo.lua
+@@ -43,7 +43,6 @@ AllQuests.FighterProfessionTierTwo = {
+             QuestMarkers.FighterValus,
+         },
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "FighterProfessionTierTwo", 1},
+             --{"QuestActive", "FighterProfessionTierTwo", false},
+             {"MinTimesQuestDone", "FighterProfessionTierOne", 1},
+@@ -223,4 +222,4 @@ AllQuests.FighterProfessionTierTwo = {
+             },                
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/FisherProfessionTierFour.lua b/scripts/globals/static_data/quests/FisherProfessionTierFour.lua
+index a621461..f00ab17 100644
+--- a/scripts/globals/static_data/quests/FisherProfessionTierFour.lua
++++ b/scripts/globals/static_data/quests/FisherProfessionTierFour.lua
+@@ -31,7 +31,6 @@ AllQuests.FisherProfessionTierFour = {
+         EndDialogue = {"[Fisher IV] I hear tales of treasure.","Ah you've discovered why their are no poor fishermen. All the waters of New Celador are littered with the lost bounties of countless ships. No doubt you've found some of their maps. Go fish up a Soaked Map and come back to me."},
+         NextStep = 2,
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "FisherProfessionTierFour", 1},
+             --{"QuestActive", "FisherProfessionTierFour", false},
+             {"MinTimesQuestDone", "FisherProfessionTierThree", 1},
+@@ -117,4 +116,4 @@ AllQuests.FisherProfessionTierFour = {
+             {"TurnIn"},
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/FisherProfessionTierThree.lua b/scripts/globals/static_data/quests/FisherProfessionTierThree.lua
+index 0cb115f..0e985d4 100644
+--- a/scripts/globals/static_data/quests/FisherProfessionTierThree.lua
++++ b/scripts/globals/static_data/quests/FisherProfessionTierThree.lua
+@@ -30,7 +30,6 @@ AllQuests.FisherProfessionTierThree = {
+         EndDialogue = {"[Fisher III] I am looking for a challenge.","Oh are ye now. Well you won't find much more challenge'n then Razor-Fish. They're elusive and smart, you catch even 50 of them and you're quite a fisherman."},
+         NextStep = 2,
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "FisherProfessionTierThree", 1},
+             --{"QuestActive", "FisherProfessionTierThree", false},
+             {"MinTimesQuestDone", "FisherProfessionTierTwo", 1},
+@@ -81,4 +80,4 @@ AllQuests.FisherProfessionTierThree = {
+             {"TakeItem", "resource_fish_razor", 50},
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/FisherProfessionTierTwo.lua b/scripts/globals/static_data/quests/FisherProfessionTierTwo.lua
+index 9dca878..1e9cb64 100644
+--- a/scripts/globals/static_data/quests/FisherProfessionTierTwo.lua
++++ b/scripts/globals/static_data/quests/FisherProfessionTierTwo.lua
+@@ -30,7 +30,6 @@ AllQuests.FisherProfessionTierTwo = {
+         EndDialogue = {"[Fisher II] How is the fishing today?","Amazing as always! If you're having trouble you should knuckle down and catch 100 Spotted Tero Fish you can find them eveywhere!"},
+         NextStep = 2,
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "FisherProfessionTierTwo", 1},
+             --{"QuestActive", "FisherProfessionTierTwo", false},
+             {"MinTimesQuestDone", "FisherProfessionTierOne", 1},
+@@ -81,4 +80,4 @@ AllQuests.FisherProfessionTierTwo = {
+             {"TakeItem", "resource_fish_spotted_tero", 100},
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/LumberjackProfessionTierFour.lua b/scripts/globals/static_data/quests/LumberjackProfessionTierFour.lua
+index ea6ca46..3df5e51 100644
+--- a/scripts/globals/static_data/quests/LumberjackProfessionTierFour.lua
++++ b/scripts/globals/static_data/quests/LumberjackProfessionTierFour.lua
+@@ -30,7 +30,6 @@ AllQuests.LumberjackProfessionTierFour = {
+         NextStep = 2,
+         EndDialogue = {"[Lumberjack IV] I can't get any stronger!","Hah, you do look very strong. It's time you learned the best places to chop. I'll share some of my favorite with you. First visit the Steel Coast in Earstern Valusia and chop 200 wood there."},
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "LumberjackProfessionTierFour", 1},
+             --{"QuestActive", "LumberjackProfessionTierFour", false},
+             {"MinTimesQuestDone", "LumberjackProfessionTierThree", 1},
+@@ -42,14 +41,14 @@ AllQuests.LumberjackProfessionTierFour = {
+     },
+ 
+     { -- 2
+-        Name = "[Lumberjack IV] Chopping Celador Part 4",
+-        Instructions = "Chop [F2F5A9]200 wood[-] at the Steel Coast in Eastern Valusia.",
++        Name = "[Lumberjack IV] Chopping Celador Part 4",
++        Instructions = "Chop [F2F5A9]200 wood[-] at the Steel Coast in Eastern Valusia.",
+         NextStep = 3,
+         Requirements = {
+             {"Skill", "LumberjackSkill", 100},
+         },
+         QuestData = {
+-            Key = "LumberjackProfessionTierFour2",
++            Key = "LumberjackProfessionTierFour2",
+             Type = "Gathering",
+             Region = "Area-Steel Coast",
+             QuestArgs = 
+@@ -85,14 +84,14 @@ AllQuests.LumberjackProfessionTierFour = {
+     },
+ 
+     { -- 4
+-        Name = "[Lumberjack IV] Chopping Celador Part 4",
+-        Instructions = "Chop [F2F5A9]200 wood[-] at the Radiant Woodlands within the Black Forest.",
++        Name = "[Lumberjack IV] Chopping Celador Part 4",
++        Instructions = "Chop [F2F5A9]200 wood[-] at the Radiant Woodlands within the Black Forest.",
+         NextStep = 5,
+         Requirements = {
+             {"Skill", "LumberjackSkill", 100},
+         },
+         QuestData = {
+-            Key = "LumberjackProfessionTierFour2",
++            Key = "LumberjackProfessionTierFour4",
+             Type = "Gathering",
+             Region = "Area-Radiant Woodlands",
+             QuestArgs = 
+@@ -128,14 +127,14 @@ AllQuests.LumberjackProfessionTierFour = {
+     },
+ 
+     { -- 6
+-        Name = "[Lumberjack IV] Chopping Celador Part 4",
+-        Instructions = "Chop [F2F5A9]200 wood[-] on Dagger Isle in the Upper Plains.",
++        Name = "[Lumberjack IV] Chopping Celador Part 4",
++        Instructions = "Chop [F2F5A9]200 wood[-] on Dagger Isle in the Upper Plains.",
+         NextStep = 7,
+         Requirements = {
+             {"Skill", "LumberjackSkill", 100},
+         },
+         QuestData = {
+-            Key = "LumberjackProfessionTierFour2",
++            Key = "LumberjackProfessionTierFour6",
+             Type = "Gathering",
+             Region = "Area-Dagger Isle",
+             QuestArgs = 
+@@ -171,14 +170,14 @@ AllQuests.LumberjackProfessionTierFour = {
+     },
+ 
+     { -- 8
+-        Name = "[Lumberjack IV] Chopping Celador Part 4",
+-        Instructions = "Chop [F2F5A9]200 wood[-] along the Howling Cape in Southern Rim.",
++        Name = "[Lumberjack IV] Chopping Celador Part 4",
++        Instructions = "Chop [F2F5A9]200 wood[-] along the Howling Cape in Southern Rim.",
+         NextStep = 9,
+         Requirements = {
+             {"Skill", "LumberjackSkill", 100},
+         },
+         QuestData = {
+-            Key = "LumberjackProfessionTierFour2",
++            Key = "LumberjackProfessionTierFour8",
+             Type = "Gathering",
+             Region = "Area-Howling Cape",
+             QuestArgs = 
+@@ -211,4 +210,4 @@ AllQuests.LumberjackProfessionTierFour = {
+             {"TurnIn"},
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/LumberjackProfessionTierOne.lua b/scripts/globals/static_data/quests/LumberjackProfessionTierOne.lua
+index 252d24a..7e78d14 100644
+--- a/scripts/globals/static_data/quests/LumberjackProfessionTierOne.lua
++++ b/scripts/globals/static_data/quests/LumberjackProfessionTierOne.lua
+@@ -34,7 +34,6 @@ AllQuests.LumberjackProfessionTierOne = {
+                 QuestMarkers.CarpenterValus,
+             },
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "LumberjackProfessionTierOne", 1},
+             --{"QuestActive", "LumberjackProfessionTierOne", false},
+             {"MinTimesQuestDone", "LumberjackProfessionIntro", 1},
+@@ -80,4 +79,4 @@ AllQuests.LumberjackProfessionTierOne = {
+             },
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/LumberjackProfessionTierThree.lua b/scripts/globals/static_data/quests/LumberjackProfessionTierThree.lua
+index 69baeeb..2107df0 100644
+--- a/scripts/globals/static_data/quests/LumberjackProfessionTierThree.lua
++++ b/scripts/globals/static_data/quests/LumberjackProfessionTierThree.lua
+@@ -33,7 +33,6 @@ AllQuests.LumberjackProfessionTierThree = {
+         EndDialogue = {"[Lumberjack III] Bring the pain!","Now you're getting the idea! I tell you what, 2,000 wood should do this time, by the end of this you'll be ready to wrestle bears!"},
+         NextStep = 2,
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "LumberjackProfessionTierThree", 1},
+             --{"QuestActive", "LumberjackProfessionTierOne", false},
+             {"MinTimesQuestDone", "LumberjackProfessionTierTwo", 1},
+@@ -86,4 +85,4 @@ AllQuests.LumberjackProfessionTierThree = {
+             {"TurnIn"},
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/LumberjackProfessionTierTwo.lua b/scripts/globals/static_data/quests/LumberjackProfessionTierTwo.lua
+index fa6af9a..9dad54a 100644
+--- a/scripts/globals/static_data/quests/LumberjackProfessionTierTwo.lua
++++ b/scripts/globals/static_data/quests/LumberjackProfessionTierTwo.lua
+@@ -33,7 +33,6 @@ AllQuests.LumberjackProfessionTierTwo = {
+         EndDialogue = {"[Lumberjack II] I feel ready for another challenge.","And a challenge you shall have! Go forth and chop 800 wood this time, show those trees what you're made of!"},
+         NextStep = 2,
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "LumberjackProfessionTierTwo", 1},
+             --{"QuestActive", "LumberjackProfessionTierOne", false},
+             {"MinTimesQuestDone", "LumberjackProfessionTierOne", 1},
+@@ -86,4 +85,4 @@ AllQuests.LumberjackProfessionTierTwo = {
+             {"TurnIn"},
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/MageProfessionTierFour.lua b/scripts/globals/static_data/quests/MageProfessionTierFour.lua
+index 155750e..654227f 100644
+--- a/scripts/globals/static_data/quests/MageProfessionTierFour.lua
++++ b/scripts/globals/static_data/quests/MageProfessionTierFour.lua
+@@ -35,7 +35,6 @@ AllQuests.MageProfessionTierFour = {
+         NextStep = 2,
+         EndDialogue = {"[Mage IV] I am ready to become a Grandmaster.","I am pleased to see you progress this far. Enter the Catacombs and speak with Ali-Larus for your final test."},
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "MageProfessionTierFour", 1},
+             --{"QuestActive", "MageProfessionTierFour", false},
+             {"MinTimesQuestDone", "MageProfessionTierThree", 1},
+@@ -179,4 +178,4 @@ AllQuests.MageProfessionTierFour = {
+             },                
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/MageProfessionTierOne.lua b/scripts/globals/static_data/quests/MageProfessionTierOne.lua
+index b4e5fd2..d9caaf8 100644
+--- a/scripts/globals/static_data/quests/MageProfessionTierOne.lua
++++ b/scripts/globals/static_data/quests/MageProfessionTierOne.lua
+@@ -103,12 +103,12 @@ AllQuests.MageProfessionTierOne = {
+         },
+         OnStart = {
+             {"Custom", function(playerObj)
+-                return Quests.InitTrackMobileKillCount(playerObj, "MageProfessionTierThree3", QuestMobTargets.Vermin)
++                return Quests.InitTrackMobileKillCount(playerObj, "MageProfessionTierOne3", QuestMobTargets.Vermin)
+             end},
+         },
+         Goals = {
+             {"Custom", function(playerObj)
+-                return Quests.RunTrackMobileKillCount(playerObj, "MageProfessionTierThree3",QuestMobTargets.Vermin, "Vermin", 15)
++                return Quests.RunTrackMobileKillCount(playerObj, "MageProfessionTierOne3",QuestMobTargets.Vermin, "Vermin", 15)
+             end},
+         },
+     },
+@@ -187,4 +187,4 @@ AllQuests.MageProfessionTierOne = {
+             },
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/MageProfessionTierThree.lua b/scripts/globals/static_data/quests/MageProfessionTierThree.lua
+index dd8d592..873b6e9 100644
+--- a/scripts/globals/static_data/quests/MageProfessionTierThree.lua
++++ b/scripts/globals/static_data/quests/MageProfessionTierThree.lua
+@@ -35,7 +35,6 @@ AllQuests.MageProfessionTierThree = {
+         NextStep = 2,
+         EndDialogue = {"[Mage III] Master Mage.","The trial of the Journeyman Mage awaits you. Travel to Dungeon Contempt and seek out Vesper Wolf."},
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "MageProfessionTierThree", 1},
+             --{"QuestActive", "MageProfessionTierThree", false},
+             {"MinTimesQuestDone", "MageProfessionTierTwo", 1},
+@@ -155,7 +154,7 @@ AllQuests.MageProfessionTierThree = {
+         Instructions = "Speak to [F2F5A9]Vesper Wolf[-].",
+         MarkerLocs = {
+             --QuestMarkers.VesperWolf,
+-            QuestMarkers.ContemptExit,
++            {3002.67, 0, -482.39},
+         },
+         NextStep = 10,
+         EndDialogue = {"[Mage III] I have returned.","You have performed valiantly. The Mage Guild will be sure to receive a commendation of your valor in my report. Return to the city speak with a trainer."},
+@@ -215,4 +214,4 @@ AllQuests.MageProfessionTierThree = {
+             },                
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/MageProfessionTierTwo.lua b/scripts/globals/static_data/quests/MageProfessionTierTwo.lua
+index 5f730c1..6f57c0c 100644
+--- a/scripts/globals/static_data/quests/MageProfessionTierTwo.lua
++++ b/scripts/globals/static_data/quests/MageProfessionTierTwo.lua
+@@ -42,8 +42,7 @@ AllQuests.MageProfessionTierTwo = {
+             QuestMarkers.MageValus,
+         },
+         Requirements = {
+-            {"Disabled"},
+-            {"MaxTimesQuestDone", "MageProfessionTierTwo", 1},
++            {"MaxTimesQuestDone", "MageProfessionTierTwo", 1},
+             --{"QuestActive", "MageProfessionTierTwo", false},
+             {"MinTimesQuestDone", "MageProfessionTierOne", 1},
+             {"Custom", function(playerObj)
+@@ -207,4 +206,4 @@ AllQuests.MageProfessionTierTwo = {
+             },                
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/MinerProfessionTierFour.lua b/scripts/globals/static_data/quests/MinerProfessionTierFour.lua
+index 3afa92a..fafda7b 100644
+--- a/scripts/globals/static_data/quests/MinerProfessionTierFour.lua
++++ b/scripts/globals/static_data/quests/MinerProfessionTierFour.lua
+@@ -32,7 +32,6 @@ AllQuests.MinerProfessionTierFour = {
+             QuestMarkers.BlacksmithBlackForest,
+         },
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "MinerProfessionTierFour", 1},
+             --{"QuestActive", "MinerProfessionTierFour", false},
+             {"MinTimesQuestDone", "MinerProfessionTierThree", 1},
+@@ -51,7 +50,7 @@ AllQuests.MinerProfessionTierFour = {
+             {"Skill", "MiningSkill", 100},
+         },
+         QuestData = {
+-            Key = "MinerProfessionTierTwo4",
++            Key = "MinerProfessionTierFour2",
+             Type = "Gathering",
+             QuestArgs = 
+             {
+@@ -84,4 +83,4 @@ AllQuests.MinerProfessionTierFour = {
+         },
+     },
+ 
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/MinerProfessionTierThree.lua b/scripts/globals/static_data/quests/MinerProfessionTierThree.lua
+index b72ba49..0fbfc19 100644
+--- a/scripts/globals/static_data/quests/MinerProfessionTierThree.lua
++++ b/scripts/globals/static_data/quests/MinerProfessionTierThree.lua
+@@ -35,7 +35,6 @@ AllQuests.MinerProfessionTierThree = {
+             QuestMarkers.BlacksmithBlackForest,
+         },
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "MinerProfessionTierThree", 1},
+             --{"QuestActive", "MinerProfessionTierThree", false},
+             {"MinTimesQuestDone", "MinerProfessionTierTwo", 1},
+@@ -181,4 +180,4 @@ AllQuests.MinerProfessionTierThree = {
+         },
+     },
+ 
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/MinerProfessionTierTwo.lua b/scripts/globals/static_data/quests/MinerProfessionTierTwo.lua
+index 343895f..2c97e82 100644
+--- a/scripts/globals/static_data/quests/MinerProfessionTierTwo.lua
++++ b/scripts/globals/static_data/quests/MinerProfessionTierTwo.lua
+@@ -37,7 +37,6 @@ AllQuests.MinerProfessionTierTwo = {
+             QuestMarkers.BlacksmithBlackForest,
+         },
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "MinerProfessionTierTwo", 1},
+             --{"QuestActive", "MinerProfessionTierTwo", false},
+             {"MinTimesQuestDone", "MinerProfessionTierOne", 1},
+@@ -228,4 +227,4 @@ AllQuests.MinerProfessionTierTwo = {
+         },
+     },
+ 
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/RogueProfessionTierFour.lua b/scripts/globals/static_data/quests/RogueProfessionTierFour.lua
+index 18a8531..d9759b5 100644
+--- a/scripts/globals/static_data/quests/RogueProfessionTierFour.lua
++++ b/scripts/globals/static_data/quests/RogueProfessionTierFour.lua
+@@ -30,7 +30,6 @@ AllQuests.RogueProfessionTierFour = {
+         EndDialogue = {"[Rogue IV] I was summoned.","Indeed, we are in need of your skills. The identity of the pirate smugglers' leader has finally been determined, and a course of action decided upon. You are to travel to Pirate's Grotto where he was last seen. Locate the boss without engaging in combat. Warn him that if he does not cease his illegal activity, there will be harsh consequences. Be tactful and don't stay long, as he is known for his brutality. Good luck, and I hope we see each other again."},
+         NextStep = 2,
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "RogueProfessionTierFour", 1},
+             --{"QuestActive", "RogueProfessionTierFour", false},
+             {"MinTimesQuestDone", "RogueProfessionTierThree", 1},
+@@ -161,4 +160,4 @@ AllQuests.RogueProfessionTierFour = {
+             },                
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/RogueProfessionTierThree.lua b/scripts/globals/static_data/quests/RogueProfessionTierThree.lua
+index 5c9fd99..0a00bbf 100644
+--- a/scripts/globals/static_data/quests/RogueProfessionTierThree.lua
++++ b/scripts/globals/static_data/quests/RogueProfessionTierThree.lua
+@@ -32,7 +32,6 @@ AllQuests.RogueProfessionTierThree = {
+         EndDialogue = {"[Rogue III] Are we ready?","Patience. Covert operations have to proceed with precision and timing. I do indeed have a task for you. It is time for you to meet one of our higher ranking friends. First, meet up with Mohana at the Oasis. He will direct you further."},
+         NextStep = 2,
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "RogueProfessionTierThree", 1},
+             --{"QuestActive", "RogueProfessionTierThree", false},
+             {"MinTimesQuestDone", "RogueProfessionTierTwo", 1},
+@@ -185,4 +184,4 @@ AllQuests.RogueProfessionTierThree = {
+             },                
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/RogueProfessionTierTwo.lua b/scripts/globals/static_data/quests/RogueProfessionTierTwo.lua
+index aec0b93..2c81e81 100644
+--- a/scripts/globals/static_data/quests/RogueProfessionTierTwo.lua
++++ b/scripts/globals/static_data/quests/RogueProfessionTierTwo.lua
+@@ -38,7 +38,6 @@ AllQuests.RogueProfessionTierTwo = {
+         EndDialogue = {"[Rogue II] Am I needed?","SHH! Trust no one. The pirates have started bribing the guards. Any one of them could be a spy. They can't know you are working with us. We need your help. One of our agents discovered key information regarding the smuggler leader's identity, he has escaped detention by corrupt guards just outside of Helm. We need to find a way to learn what he knows, without the use of force. Find our agent by the old guard wall and retrieve his information without any witnesses."},
+         NextStep = 2,
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "RogueProfessionTierTwo", 1},
+             --{"QuestActive", "RogueProfessionTierTwo", false},
+             {"MinTimesQuestDone", "RogueProfessionTierOne", 1},
+@@ -171,4 +170,4 @@ AllQuests.RogueProfessionTierTwo = {
+             },                
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/ScribeProfessionTierFour.lua b/scripts/globals/static_data/quests/ScribeProfessionTierFour.lua
+index ef66c9e..6799d87 100644
+--- a/scripts/globals/static_data/quests/ScribeProfessionTierFour.lua
++++ b/scripts/globals/static_data/quests/ScribeProfessionTierFour.lua
+@@ -30,7 +30,6 @@ AllQuests.ScribeProfessionTierFour = {
+         EndDialogue = {"[Scribe IV] I feel I've reached my peak.","You have, I can see in your the magic that has been imbued through the long hours and constant toil in perfecting this craft. No doubt you have realized the potential in your skill, craft 10 runebooks and return to me for your final instruction."},
+         NextStep = 2,
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "ScribeProfessionTierFour", 1},
+             --{"QuestActive", "ScribeProfessionTierFour", false},
+             {"MinTimesQuestDone", "ScribeProfessionTierThree", 1},
+@@ -79,4 +78,4 @@ AllQuests.ScribeProfessionTierFour = {
+             {"TurnIn"},
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/ScribeProfessionTierThree.lua b/scripts/globals/static_data/quests/ScribeProfessionTierThree.lua
+index 06d5a77..bae36fe 100644
+--- a/scripts/globals/static_data/quests/ScribeProfessionTierThree.lua
++++ b/scripts/globals/static_data/quests/ScribeProfessionTierThree.lua
+@@ -32,7 +32,6 @@ AllQuests.ScribeProfessionTierThree = {
+         EndDialogue = {"[Scribe III] Are there any other scrolls to stock?","Aye, any that could be used in combat scenarios. I would suggest making 100 Energy Bolt scrolls."},
+         NextStep = 2,
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "ScribeProfessionTierThree", 1},
+             --{"QuestActive", "ScribeProfessionTierThree", false},
+             {"MinTimesQuestDone", "ScribeProfessionTierTwo", 1},
+@@ -125,4 +124,4 @@ AllQuests.ScribeProfessionTierThree = {
+             {"HasItemInBackpack", "lscroll_frost", 25},
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/ScribeProfessionTierTwo.lua b/scripts/globals/static_data/quests/ScribeProfessionTierTwo.lua
+index b10e573..98906b7 100644
+--- a/scripts/globals/static_data/quests/ScribeProfessionTierTwo.lua
++++ b/scripts/globals/static_data/quests/ScribeProfessionTierTwo.lua
+@@ -32,7 +32,6 @@ AllQuests.ScribeProfessionTierTwo = {
+         EndDialogue = {"[Scribe II] What should I stock up on?","Scrolls aren't just good for filling spellbooks. Scribes can utilize scrolls with increased pontency so having a stockpile of offensive scrolls is always recommended. Why don't you make 100 fireball scrolls."},
+         NextStep = 2,
+         Requirements = {
+-            {"Disabled"},
+             {"MaxTimesQuestDone", "ScribeProfessionTierTwo", 1},
+             --{"QuestActive", "ScribeProfessionTierTwo", false},
+             {"MinTimesQuestDone", "ScribeProfessionTierOne", 1},
+@@ -125,4 +124,4 @@ AllQuests.ScribeProfessionTierTwo = {
+             {"HasItemInBackpack", "lscroll_lightning", 100},
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/TailorProfessionTierFour.lua b/scripts/globals/static_data/quests/TailorProfessionTierFour.lua
+index 8cd9629..343bca1 100644
+--- a/scripts/globals/static_data/quests/TailorProfessionTierFour.lua
++++ b/scripts/globals/static_data/quests/TailorProfessionTierFour.lua
+@@ -37,7 +37,6 @@ AllQuests.TailorProfessionTierFour = {
+             --{"TailorProfessionTierFour", 1, false},
+         },
+         Requirements = {
+-            {"Disabled"},
+             {"Skill", "FabricationSkill", 100},
+             {"MaxTimesQuestDone", "TailorProfessionTierFour", 1},
+             {"MinTimesQuestDone", "TailorProfessionTierThree", 1},
+@@ -170,4 +169,4 @@ AllQuests.TailorProfessionTierFour = {
+         },
+     },
+ 
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/TailorProfessionTierThree.lua b/scripts/globals/static_data/quests/TailorProfessionTierThree.lua
+index b68783e..e3c1185 100644
+--- a/scripts/globals/static_data/quests/TailorProfessionTierThree.lua
++++ b/scripts/globals/static_data/quests/TailorProfessionTierThree.lua
+@@ -40,7 +40,6 @@ AllQuests.TailorProfessionTierThree = {
+             --{"TailorProfessionTierThree", 1, false},
+         },
+         Requirements = {
+-            {"Disabled"},
+             {"Skill", "FabricationSkill", 80},
+             {"MaxTimesQuestDone", "TailorProfessionTierThree", 1},
+             {"MinTimesQuestDone", "TailorProfessionTierTwo", 1},
+@@ -197,4 +196,4 @@ AllQuests.TailorProfessionTierThree = {
+             end},
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/TailorProfessionTierTwo.lua b/scripts/globals/static_data/quests/TailorProfessionTierTwo.lua
+index bd2c581..7c342d4 100644
+--- a/scripts/globals/static_data/quests/TailorProfessionTierTwo.lua
++++ b/scripts/globals/static_data/quests/TailorProfessionTierTwo.lua
+@@ -40,7 +40,6 @@ AllQuests.TailorProfessionTierTwo = {
+             --{"TailorProfessionTierTwo", 1, false},
+         },
+         Requirements = {
+-            {"Disabled"},
+             {"Skill", "FabricationSkill", 50},
+             {"MaxTimesQuestDone", "TailorProfessionTierTwo", 1},
+             {"MinTimesQuestDone", "TailorProfessionTierOne", 1},
+@@ -226,4 +225,4 @@ AllQuests.TailorProfessionTierTwo = {
+             end},
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/TamerProfessionTierFour.lua b/scripts/globals/static_data/quests/TamerProfessionTierFour.lua
+index 5c6436b..d019f03 100644
+--- a/scripts/globals/static_data/quests/TamerProfessionTierFour.lua
++++ b/scripts/globals/static_data/quests/TamerProfessionTierFour.lua
+@@ -34,8 +34,7 @@ AllQuests.TamerProfessionTierFour = {
+         NextStep = 2,
+         EndDialogue = {"[Tamer IV] I finally did it.","Congratulations! You are clearly an incredibly accomplished tamer. Tame these remaining creatures to prove your skill."},
+         Requirements = {
+-            {"Disabled"},
+-            {"MaxTimesQuestDone", "TamerProfessionTierFour", 1},
++            {"MaxTimesQuestDone", "TamerProfessionTierFour", 1},
+             --{"QuestActive", "TamerProfessionTierFour", false},
+             {"MinTimesQuestDone", "TamerProfessionTierThree", 1},
+             {"Skill", "AnimalTamingSkill", 100},
+@@ -120,4 +119,4 @@ AllQuests.TamerProfessionTierFour = {
+             {"TurnIn"},
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/TamerProfessionTierThree.lua b/scripts/globals/static_data/quests/TamerProfessionTierThree.lua
+index 1c0d163..991bdb0 100644
+--- a/scripts/globals/static_data/quests/TamerProfessionTierThree.lua
++++ b/scripts/globals/static_data/quests/TamerProfessionTierThree.lua
+@@ -36,8 +36,7 @@ AllQuests.TamerProfessionTierThree = {
+         NextStep = 2,
+         EndDialogue = {"[Tamer III] I want to tame them all.","This one's a doosey. Here is a list that should last you a while, and take you to some interesting places. You may notice your creatures are becoming quite a bit stronger!"},
+         Requirements = {
+-            {"Disabled"},
+-            {"MaxTimesQuestDone", "TamerProfessionTierThree", 1},
++            {"MaxTimesQuestDone", "TamerProfessionTierThree", 1},
+             --{"QuestActive", "TamerProfessionTierThree", false},
+             {"MinTimesQuestDone", "TamerProfessionTierTwo", 1},
+             {"Skill", "AnimalTamingSkill", 80},
+@@ -162,4 +161,4 @@ AllQuests.TamerProfessionTierThree = {
+             {"TurnIn"},
+         },
+     },
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/globals/static_data/quests/TamerProfessionTierTwo.lua b/scripts/globals/static_data/quests/TamerProfessionTierTwo.lua
+index f42b115..5d45db5 100644
+--- a/scripts/globals/static_data/quests/TamerProfessionTierTwo.lua
++++ b/scripts/globals/static_data/quests/TamerProfessionTierTwo.lua
+@@ -35,8 +35,7 @@ AllQuests.TamerProfessionTierTwo = {
+         NextStep = 2,
+         EndDialogue = {"[Tamer II] What other creatures can I tame?","Bears, scorpions, and crabs, oh my! Congratulations for sticking with it. Go and see if you can find these creatures."},
+         Requirements = {
+-            {"Disabled"},
+-            {"MaxTimesQuestDone", "TamerProfessionTierTwo", 1},
++            {"MaxTimesQuestDone", "TamerProfessionTierTwo", 1},
+             --{"QuestActive", "TamerProfessionTierTwo", false},
+             {"MinTimesQuestDone", "TamerProfessionTierOne", 1},
+             {"Skill", "AnimalTamingSkill", 50},
+@@ -145,4 +144,4 @@ AllQuests.TamerProfessionTierTwo = {
+             {"TurnIn"},
+         },
+     },
+-}
+\ No newline at end of file
++}

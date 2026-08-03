@@ -1,0 +1,416 @@
+diff --git a/scripts/merchant_shop_ui.lua b/scripts/merchant_shop_ui.lua
+index 15c0e40..bb2f768 100644
+--- a/scripts/merchant_shop_ui.lua
++++ b/scripts/merchant_shop_ui.lua
+@@ -1,8 +1,12 @@
+ MerchantShopUI = MerchantShopUI or {}
+ 
+--- Buy carts: [playerStr] = { [stockPos] = qty }
+-local activeShopCarts = {}
+-
++-- Buy carts: [playerStr] = { [stockPos] = qty }
++local activeShopCarts = {}
++
++-- Last regular merchandise row selected by each player. Scroll-row buttons do
++-- not submit text fields, so quantity is applied by a separate root button.
++local activeBuySelections = {}
++
+ -- Sell carts: [playerStr] = { [itemKey] = qty }  (itemKey = tostring(item))
+ local activeSellCarts = {}
+ 
+@@ -177,9 +181,10 @@ local function ClearShopSession(player)
+     activeSellCarts[key] = nil
+     activeModes[key] = nil
+     activeSearchFilters[key] = nil
+-    activeShopPlayers[key] = nil
+-    activeShopRangeAnchors[key] = nil
+-end
++    activeShopPlayers[key] = nil
++    activeShopRangeAnchors[key] = nil
++    activeBuySelections[key] = nil
++end
+ 
+ local function IsPlayerInShopRange(merchant, player, key)
+     local anchor = activeShopRangeAnchors[key]
+@@ -512,10 +517,10 @@ function MerchantShopUI.Open(merchant, player, sourceObj, initialMode)
+         return
+     end
+     local rangeObj = (sourceObj and sourceObj:IsValid()) and sourceObj or merchant
+-    if rangeObj:DistanceFrom(player) > MERCHANT_INTERACTION_RANGE then
+-        player:SystemMessage("You are too far away.", "info")
+-        return
+-    end
++    if rangeObj:DistanceFrom(player) > SHOP_UI_MAX_DISTANCE then
++        player:SystemMessage("You are too far away.", "info")
++        return
++    end
+ 
+     local playerKey = tostring(player)
+     if initialMode == "buy" or initialMode == "sell" then
+@@ -649,11 +654,13 @@ end
+ 
+ -- ── Buy view ──────────────────────────────────────────────────────────────
+ 
+-function MerchantShopUI.BuildBuyView(window, merchant, player, contentY, frameX, frameW)
++function MerchantShopUI.BuildBuyView(window, merchant, player, contentY, frameX, frameW)
+     local stockData     = merchant:GetObjVar("StockData")
+     local itemInventory = stockData and stockData.ItemInventory or {}
+-    local liveStock     = GetMerchantStock(merchant)
+-    local cart          = GetCart(player)
++    local liveStock     = GetMerchantStock(merchant)
++    local cart          = GetCart(player)
++    local playerKey     = tostring(player)
++    local selectedPos   = activeBuySelections[playerKey]
+ 
+     local positions = {}
+     for pos in pairs(itemInventory) do table.insert(positions, pos) end
+@@ -680,9 +687,12 @@ function MerchantShopUI.BuildBuyView(window, merchant, player, contentY, frameX,
+             local labelY = (ROW_H - 24) / 2
+ 
+             -- Subtle alternating row tint (every other row gets a faint dark wash).
+-            if (rowIndex % 2) == 0 then
+-                element:AddImage(0, 0, "Blank", scrollW - 20, ROW_H, "Sliced", "3D2A18", 0, 0.08)
+-            end
++            if (rowIndex % 2) == 0 then
++                element:AddImage(0, 0, "Blank", scrollW - 20, ROW_H, "Sliced", "3D2A18", 0, 0.08)
++            end
++            if selectedPos == pos then
++                element:AddImage(0, 0, "Blank", scrollW - 20, ROW_H, "Sliced", "B8862B", 0, 0.14)
++            end
+ 
+             -- Icon frame + icon
+             element:AddImage(COL_ICON, cy, "icon-frame", ICON_FRAME, ICON_FRAME)
+@@ -697,11 +707,13 @@ function MerchantShopUI.BuildBuyView(window, merchant, player, contentY, frameX,
+             -- Text columns
+             element:AddLabel(COL_NAME,  labelY, ThemedText(info.name),    COL_NAME_W,  24, 24, "left",   false, false, BODY_FONT)
+             element:AddLabel(COL_STOCK, labelY, ThemedText(info.availStr), COL_STOCK_W, 24, 24, "center", false, false, BODY_FONT)
+-            -- Quantity and price occupy separate columns. Price shows the selected
+-            -- line total, or the unit price before the item is added.
+-            if cartQty > 0 then
+-                element:AddLabel(COL_QTY, labelY, ThemedText(tostring(cartQty)), COL_QTY_W, 24, 24, "center", false, false, BODY_FONT)
+-            end
++            -- Quantity and price occupy separate columns. The root-level
++            -- BuyQuantity field controls how much the row's Buy button selects;
++            -- this column shows the quantity currently in the cart.
++            local isSaleAnimal = info.liveItem and info.liveItem:HasObjVar("TamingDifficulty")
++            if cartQty > 0 then
++                element:AddLabel(COL_QTY, labelY, ThemedText(tostring(cartQty)), COL_QTY_W, 24, 24, "center", false, false, BODY_FONT)
++            end
+             local displayPrice = cartQty > 0
+                 and ComputeIncrementalBuyGold(merchant, pos, info, cartQty, player)
+                 or price
+@@ -709,11 +721,12 @@ function MerchantShopUI.BuildBuyView(window, merchant, player, contentY, frameX,
+             element:AddLabel(COL_PRICE, labelY, ThemedText(priceText), COL_PRICE_W, 24, 24, "right", false, false, BODY_FONT)
+             AddPriceIcon(element, COL_COIN, labelY - 2, 20)
+ 
+-            -- Buy button (vertically centered)
+-            if info.isAvailable and info.basePrice > 0 then
+-                local btnY = (ROW_H - 37) / 2
+-                element:AddButton(COL_BTN, btnY, "add:" .. pos, "", 97, 37, "", "", false, "", "", MerchantButtonSprites.BuyButton)
+-            end
++            -- Buy button (vertically centered)
++            if info.isAvailable and info.basePrice > 0 then
++                local btnY = (ROW_H - 37) / 2
++                local action = isSaleAnimal and "add:" or "selectqty:"
++                element:AddButton(COL_BTN, btnY, action .. pos, "", 97, 37, "", "", false, "", "", MerchantButtonSprites.BuyButton)
++            end
+ 
+             -- Invisible tooltip overlay on icon+name area
+             local tipText = info.liveItem and info.liveItem:GetSharedObjectProperty("TooltipString") or ""
+@@ -753,10 +766,27 @@ function MerchantShopUI.BuildBuyView(window, merchant, player, contentY, frameX,
+     window:AddLabel(185, footerY, ThemedText(totalText),           120, 28, 24, "left", false, false, BODY_FONT)
+ 
+     local availableText = FormatPrice(goldAvail)
+-    window:AddLabel(330, footerY, ThemedText("Gold Available:"),   150, 28, 24, "left", false, false, BODY_FONT)
+-    AddPriceIcon(window, 480, footerY - 2, 22)
+-    window:AddLabel(505, footerY, ThemedText(availableText),       140, 28, 24, "left", false, false, BODY_FONT)
+-
++    window:AddLabel(330, footerY, ThemedText("Gold Available:"),   150, 28, 24, "left", false, false, BODY_FONT)
++    AddPriceIcon(window, 480, footerY - 2, 22)
++    window:AddLabel(505, footerY, ThemedText(availableText),       140, 28, 24, "left", false, false, BODY_FONT)
++
++    -- Merchant object-bound windows do not submit text-field values in the
++    -- current client. Quantity controls encode their adjustment in button IDs
++    -- and sit on the lower-left action row, clear of the gold total above.
++    local selectedData = selectedPos and itemInventory[selectedPos] or nil
++    if selectedData then
++        local selectedQty = cart[selectedPos] or 1
++        window:AddLabel(80, btnY + 2, ThemedText("Qty:"), 45, 28, 22, "left", false, false, BODY_FONT)
++        window:AddButton(125, btnY, "BuyQtyAdjust|-10", "-10", 42, 32, "", "", false, "")
++        window:AddButton(170, btnY, "BuyQtyAdjust|-1", "-1", 36, 32, "", "", false, "")
++        window:AddLabel(209, btnY + 2, ThemedText(tostring(selectedQty)), 42, 28, 22, "center", false, false, BODY_FONT)
++        window:AddButton(254, btnY, "BuyQtyAdjust|1", "+1", 36, 32, "", "", false, "")
++        window:AddButton(293, btnY, "BuyQtyAdjust|10", "+10", 42, 32, "", "", false, "")
++        window:AddButton(338, btnY, "BuyQtyMax", "Max", 45, 32, "", "", false, "")
++    else
++        window:AddLabel(80, btnY + 4, ThemedText("Click Buy to select an item."), 250, 28, 20, "left", false, false, BODY_FONT)
++    end
++
+     -- Clear and Accept anchored inside the parchment's bottom-right curl.
+     window:AddButton(WIN_W - 270, btnY, "clear",  "", 100, 35, "", "", false, "", "", MerchantButtonSprites.ClearButton)
+     window:AddButton(WIN_W - 160, btnY, "accept", "", 111, 35, "", "", false, "", "", MerchantButtonSprites.AcceptButton)
+@@ -917,16 +947,48 @@ function MerchantShopUI.HandleResponse(merchant, player, buttonId, fieldData)
+         return
+     end
+ 
+-    if buttonId == "clear" then
+-        if mode == "sell" then
+-            ClearSellCart(player)
+-        else
+-            ClearCart(player)
+-        end
+-        MerchantShopUI.BuildAndSend(merchant, player)
+-        return
+-    end
+-
++    if buttonId == "clear" then
++        if mode == "sell" then
++            ClearSellCart(player)
++        else
++            ClearCart(player)
++            activeBuySelections[tostring(player)] = nil
++        end
++        MerchantShopUI.BuildAndSend(merchant, player)
++        return
++    end
++
++    local buyQtyDelta = buttonId:match("^BuyQtyAdjust|([%-]?%d+)$")
++    if buyQtyDelta or buttonId == "BuyQtyMax" then
++        local playerKey    = tostring(player)
++        local pos          = activeBuySelections[playerKey]
++        local stockData    = merchant:GetObjVar("StockData")
++        local inventory    = stockData and stockData.ItemInventory or {}
++        local liveStock    = GetMerchantStock(merchant)
++        local data         = pos and inventory[pos] or nil
++        if not data then
++            player:SystemMessage("Select an item before setting its quantity.", "info")
++            MerchantShopUI.BuildAndSend(merchant, player)
++            return
++        end
++
++        local info = GetSlotInfo(merchant, pos, data, liveStock[pos])
++        if not info.isAvailable then
++            player:SystemMessage("That item is out of stock.", "info")
++            MerchantShopUI.BuildAndSend(merchant, player)
++            return
++        end
++
++        local maxQty = info.isUnlimited and 9999 or info.stockCount
++        local cart = GetCart(player)
++        local requestedQty = buttonId == "BuyQtyMax"
++            and maxQty
++            or ((cart[pos] or 1) + tonumber(buyQtyDelta))
++        cart[pos] = math.max(1, math.min(requestedQty, maxQty))
++        MerchantShopUI.BuildAndSend(merchant, player)
++        return
++    end
++
+     -- Parse "action:N" — works for both "add:5" (buy) and "sell_add:3" (sell)
+     local action, idxStr = buttonId:match("^(.-):(%d+)$")
+     if action == nil or idxStr == nil then return end
+@@ -1000,23 +1062,28 @@ function MerchantShopUI.HandleResponse(merchant, player, buttonId, fieldData)
+ 
+     local info = GetSlotInfo(merchant, pos, data, liveStock[pos])
+ 
+-    if action == "add" or action == "more" then
+-        if not info.isAvailable then
+-            player:SystemMessage("That item is out of stock.", "info")
+-            MerchantShopUI.BuildAndSend(merchant, player)
++    if action == "add" or action == "more" or action == "selectqty" then
++        if not info.isAvailable then
++            player:SystemMessage("That item is out of stock.", "info")
++            MerchantShopUI.BuildAndSend(merchant, player)
+             return
+         end
+-        if info.liveItem and info.liveItem:HasObjVar("TamingDifficulty") then
++        if info.liveItem and info.liveItem:HasObjVar("TamingDifficulty") then
+             if not CanAddToActivePets(player, info.liveItem) then
+                 player:SystemMessage("You cannot control any more pets.", "info")
+                 MerchantShopUI.BuildAndSend(merchant, player)
+                 return
+-            end
+-            cart[pos] = 1
+-        else
+-            local maxQty = info.isUnlimited and 9999 or info.stockCount
+-            cart[pos] = math.min((cart[pos] or 0) + 1, maxQty)
+-        end
++            end
++            cart[pos] = 1
++        else
++            local maxQty = info.isUnlimited and 9999 or info.stockCount
++            if action == "selectqty" then
++                activeBuySelections[tostring(player)] = pos
++                cart[pos] = math.min(math.max(cart[pos] or 1, 1), maxQty)
++            else
++                cart[pos] = math.min((cart[pos] or 0) + 1, maxQty)
++            end
++        end
+     elseif action == "less" then
+         local newQty = (cart[pos] or 1) - 1
+         if newQty <= 0 then cart[pos] = nil else cart[pos] = newQty end
+@@ -1035,10 +1102,13 @@ function MerchantShopUI.Checkout(merchant, player)
+         player:SystemMessage("The merchant is unavailable.", "info")
+         return
+     end
+-    if merchant:DistanceFrom(player) > MERCHANT_INTERACTION_RANGE then
+-        player:SystemMessage("You are too far away.", "info")
+-        return
+-    end
++    -- A shop opened from a display item or sale animal must keep using that
++    -- interaction anchor. Some woodsmith and stable-master stock is placed
++    -- well beyond the merchant mobile's interaction range.
++    if not IsPlayerInShopRange(merchant, player, tostring(player)) then
++        player:SystemMessage("You are too far away.", "info")
++        return
++    end
+ 
+     local cart          = GetCart(player)
+     local stockData     = merchant:GetObjVar("StockData")
+@@ -1118,32 +1188,84 @@ function MerchantShopUI.Checkout(merchant, player)
+     end
+ end
+ 
+--- Purchase path for items with no live display object (template-only / unlimited stock).
+-local function CreateFromTemplate(buyer, entry)
+-    local backpack = buyer:GetEquippedObject("Backpack")
+-    if backpack == nil then return end
+-    local canCreate, reason = CanCreateItemInContainer(entry.template, backpack, entry.qty, true)
+-    if not canCreate then
+-        buyer:SystemMessage(reason)
+-    else
+-        local templateData = GetTemplateData(entry.template)
+-        local isStackable = templateData.LuaModules and (templateData.LuaModules.stackable or templateData.LuaModules.coins)
+-        if isStackable then
+-            Create.Stack.InContainer(entry.template, backpack, entry.qty)
+-        else
+-            for i = 1, entry.qty do
+-                Create.InContainer(entry.template, backpack)
+-            end
+-        end
+-    end
+-    buyer:SystemMessage("You purchased " .. tostring(entry.qty) .. " " .. entry.name
+-        .. " for " .. ValueToAmountStr(entry.lineTotal) .. ".", "info")
+-    Merchant.DoPurchaseComplete(buyer)
+-end
+-
+--- ConsumeResourceResponse handler for buy checkouts.
+--- base_transaction's handler ignores IDs not in activeTransactions, so both coexist.
+-RegisterEventHandler(EventType.Message, "ConsumeResourceResponse",
++-- Create the exact cart quantity without routing through base_merchant's legacy
++-- single-purchase path. That path rechecks distance against the merchant
++-- instead of the shop's interaction anchor, and its non-stackable stock update
++-- only consumes one unit even when a larger amount is supplied.
++local function CreatePurchasedQuantity(buyer, entry)
++    local backpack = buyer:GetEquippedObject("Backpack")
++    if backpack == nil then return false end
++    local canCreate, reason = CanCreateItemInContainer(entry.template, backpack, entry.qty, true)
++    if not canCreate then
++        buyer:SystemMessage(reason)
++        return false
++    end
++
++    local templateData = GetTemplateData(entry.template)
++    local isStackable = templateData.LuaModules
++        and (templateData.LuaModules.stackable or templateData.LuaModules.coins)
++    if isStackable then
++        Create.Stack.InContainer(entry.template, backpack, entry.qty)
++    else
++        for i = 1, entry.qty do
++            Create.InContainer(entry.template, backpack)
++        end
++    end
++
++    return true
++end
++
++-- Purchase path for items with no live display object (template-only /
++-- unlimited stock).
++local function CreateFromTemplate(buyer, entry)
++    if not CreatePurchasedQuantity(buyer, entry) then return end
++    buyer:SystemMessage("You purchased " .. tostring(entry.qty) .. " " .. entry.name
++        .. " for " .. ValueToAmountStr(entry.lineTotal) .. ".", "info")
++    Merchant.DoPurchaseComplete(buyer)
++end
++
++local function FulfillLivePurchase(merchant, buyer, entry)
++    local item = entry.item
++    local tamingDiff = GetTemplateObjVar(entry.template, "TamingDifficulty")
++
++    -- Sale animals are constrained to a cart quantity of one.
++    if tamingDiff then
++        local createId = uuid() .. "CreatePet"
++        RegisterSingleEventHandler(EventType.CreatedObject, createId, function(success, objRef)
++            if success then
++                SetCreatureAsPet(objRef, buyer)
++            end
++        end)
++        CreateObj(entry.template, buyer:GetLoc(), createId)
++    elseif not CreatePurchasedQuantity(buyer, entry) then
++        return
++    end
++
++    if not item:GetObjVar("UnlimitedStock") then
++        if IsStackable(item) then
++            Merchant.UpdateStock(merchant, item, entry.qty)
++        else
++            -- Merchant.UpdateStock ignores amount for non-stackable stock, so
++            -- consume one stock unit for every item delivered.
++            for i = 1, entry.qty do
++                Merchant.UpdateStock(merchant, item, 1)
++            end
++        end
++    end
++
++    buyer:SystemMessage("You purchased " .. tostring(entry.qty) .. " " .. entry.name
++        .. " for " .. ValueToAmountStr(entry.lineTotal) .. ".", "info")
++    Merchant.DoPurchaseComplete(buyer)
++
++    local position = item:GetObjVar("StockPosition")
++    if position and not item:GetObjVar("UnlimitedStock") then
++        Merchant.RefreshSlotPrice(merchant, position)
++    end
++end
++
++-- ConsumeResourceResponse handler for buy checkouts.
++-- base_transaction's handler ignores IDs not in activeTransactions, so both coexist.
++RegisterEventHandler(EventType.Message, "ConsumeResourceResponse",
+     function(success, checkoutId, buyer)
+         local checkout = activeShopCheckouts[checkoutId]
+         if checkout == nil then return end
+@@ -1157,13 +1279,13 @@ RegisterEventHandler(EventType.Message, "ConsumeResourceResponse",
+             MerchantShopUI.BuildAndSend(this, player)
+             return
+         end
+-
+-        for _, entry in ipairs(checkout.items) do
+-            if entry.item ~= nil and entry.item:IsValid() then
+-                Merchant.DoPurchase(player, entry.item, entry.lineTotal, entry.qty)
+-            else
+-                CreateFromTemplate(player, entry)
+-            end
++
++        for _, entry in ipairs(checkout.items) do
++            if entry.item ~= nil and entry.item:IsValid() then
++                FulfillLivePurchase(this, player, entry)
++            else
++                CreateFromTemplate(player, entry)
++            end
+         end
+ 
+         ClearCart(player)
+@@ -1180,10 +1302,11 @@ function MerchantShopUI.SellCheckout(merchant, player)
+         player:SystemMessage("The merchant is unavailable.", "info")
+         return
+     end
+-    if merchant:DistanceFrom(player) > MERCHANT_INTERACTION_RANGE then
+-        player:SystemMessage("You are too far away.", "info")
+-        return
+-    end
++    -- Match the range validation used to open and maintain this shop session.
++    if not IsPlayerInShopRange(merchant, player, playerKey) then
++        player:SystemMessage("You are too far away.", "info")
++        return
++    end
+ 
+     local sellCart     = GetSellCart(player)
+     local sellable     = GetSellableItems(merchant, player)

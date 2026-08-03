@@ -1,0 +1,136 @@
+diff --git a/scripts/globals/helpers/prestige.lua b/scripts/globals/helpers/prestige.lua
+index e546901..4be3107 100644
+--- a/scripts/globals/helpers/prestige.lua
++++ b/scripts/globals/helpers/prestige.lua
+@@ -131,11 +131,15 @@ function PerformPrestigeAbilityByName(playerObj, mobileObj, prestigeAbilityClass
+ 
+ 	local prestigeAbility = GetPrestigeAbility(prestigeAbilityClass, prestigeAbilityName)
+ 
+-	if not( HasPrestigePrerequisites(playerObj, prestigeAbility) ) then
+-		return PrestigeAbilityError("You lack the skill levels to use this ability.", playerObj, isPlayer)
+-	end
+-
+-	if not( HasRequiredMilitiaRank(playerObj, prestigeAbilityClass, prestigeAbilityName) ) then
++	if not( HasPrestigePrerequisites(playerObj, prestigeAbility) ) then
++		return PrestigeAbilityError("You lack the skill levels to use this ability.", playerObj, isPlayer)
++	end
++
++	if not( HasRequiredProfession(playerObj, prestigeAbilityClass, prestigeAbilityName) ) then
++		return PrestigeAbilityError("Your profession rank is not high enough to use this ability.", playerObj, isPlayer)
++	end
++
++	if not( HasRequiredMilitiaRank(playerObj, prestigeAbilityClass, prestigeAbilityName) ) then
+ 		return PrestigeAbilityError("Your militia rank is not high enough to perform that ability.", playerObj, isPlayer)
+ 	end
+ 
+@@ -571,8 +575,9 @@ function GetPrestigeAbilityUserAction(playerObj, position, prestigeClass, presti
+ 		local paData = GetPrestigeAbility(prestigeClass, prestigeAbility)
+ 		if ( paData and paData.Action ~= nil) then
+ 			
+-			local isProfessionLocked = not HasPrestigePrerequisites(playerObj, paData)
+-			local isMilitiaLocked = not(HasRequiredMilitiaRank(playerObj, prestigeClass, prestigeAbility))
++			local isSkillLocked = not HasPrestigePrerequisites(playerObj, paData)
++			local isProfessionLocked = not HasRequiredProfession(playerObj, prestigeClass, prestigeAbility)
++			local isMilitiaLocked = not(HasRequiredMilitiaRank(playerObj, prestigeClass, prestigeAbility))
+ 			local isArmorLocked = false
+ 			if ( paData.RequireArmor ) then
+ 				local armorWeight = GetArmorWeightClass(playerObj)
+@@ -586,14 +591,19 @@ function GetPrestigeAbilityUserAction(playerObj, position, prestigeClass, presti
+ 			abilityAction.ServerCommand = "pa ".. prestigeClass .. " " .. prestigeAbility
+ 			abilityAction.ID = "pa_"..prestigeClass.."_"..prestigeAbility
+ 			abilityAction.ActionType = "CombatAbility"
+-			abilityAction.Enabled = not(isProfessionLocked) and not(isMilitiaLocked)
++			abilityAction.Enabled = not(isSkillLocked) and not(isProfessionLocked) and not(isMilitiaLocked)
+ 
+ 			abilityAction.Tooltip = GetPrestigeAbilityTooltip(paData)
+ 
+-			if ( isProfessionLocked ) then
+-				local requireStr = BuildPrestigePrerequisitesString(paData)	
+-				abilityAction.Tooltip = (abilityAction.Tooltip or "") .. "\n\n[FF0000]Requires:\n"..requireStr.."[-]"
+-			end
++			if ( isSkillLocked ) then
++				local requireStr = BuildPrestigePrerequisitesString(paData)	
++				abilityAction.Tooltip = (abilityAction.Tooltip or "") .. "\n\n[FF0000]Requires:\n"..requireStr.."[-]"
++			end
++			if ( isProfessionLocked ) then
++				local requiredTier = GetRequiredProfessionTier(prestigeClass, prestigeAbility)
++				local requiredTitle = ProfessionsHelpers.GetProfessionTierTitle(requiredTier) or ("Tier "..tostring(requiredTier))
++				abilityAction.Tooltip = (abilityAction.Tooltip or "") .. "\n\n[FF0000]Requires: "..requiredTitle.." "..prestigeClass.."[-]"
++			end
+ 			if( isMilitiaLocked ) then
+ 				abilityAction.Tooltip = (abilityAction.Tooltip or "") .. "\n\n[FF0000]Requires: Milita Rank "..paData.MilitiaRankRequirement.."[-]"
+ 			end
+@@ -735,10 +745,14 @@ function ValidateAbilityTrain(playerObj,prestigeClass,prestigeAbility,options)
+ 		NoPoints = false,
+ 	}
+ 	
+-	local paData = GetPrestigeAbility(prestigeClass, prestigeAbility)
+-	if not( paData ) then return false,"Error" end
+-
+-	-- validate that player is in a house or inn
++	local paData = GetPrestigeAbility(prestigeClass, prestigeAbility)
++	if not( paData ) then return false,"Error" end
++
++	if not( HasRequiredProfession(playerObj, prestigeClass, prestigeAbility) ) then
++		return false, "Profession"
++	end
++
++	-- validate that player is in a house or inn
+ 	local inConflict = HasAnyActiveConflictRecords(playerObj)
+ 	if ( (playerObj:IsInRegion("WorldInns") or Plot.IsInHouse(playerObj,true)) and not(inConflict) ) then
+ 		return false, "NotInHouse"
+diff --git a/scripts/prestige_ability_book.lua b/scripts/prestige_ability_book.lua
+index da3dbe2..70e431e 100644
+--- a/scripts/prestige_ability_book.lua
++++ b/scripts/prestige_ability_book.lua
+@@ -39,11 +39,15 @@ RegisterEventHandler(EventType.Message,"UseObject",
+ 				return
+ 			end
+ 
+-			local paName = this:GetObjVar("PrestigeAbility")
+-			local paClass = GetPrestigeAbilityClass(paName)
+-			if(IsAbilityUnlocked(user,paClass,paName)) then
+-				user:SystemMessage("You have already unlocked the "..paName.." ability.","info")
+-			else
++			local paName = this:GetObjVar("PrestigeAbility")
++			local paClass = GetPrestigeAbilityClass(paName)
++			if(IsAbilityUnlocked(user,paClass,paName)) then
++				user:SystemMessage("You have already unlocked the "..paName.." ability.","info")
++			elseif not(HasRequiredProfession(user,paClass,paName)) then
++				local requiredTier = GetRequiredProfessionTier(paClass,paName)
++				local requiredTitle = ProfessionsHelpers.GetProfessionTierTitle(requiredTier) or ("Tier "..tostring(requiredTier))
++				user:SystemMessage("You must earn the "..requiredTitle.." "..paClass.." rank before consuming this book.","info")
++			else
+ 				DebugMessage("Unlocking ability: "..paName .." for "..paClass)
+ 				local abilityEntry = GetPrestigeAbility(paClass,paName)
+ 				local displayName = abilityEntry.Action.DisplayName or paName
+@@ -60,12 +64,16 @@ RegisterEventHandler(EventType.Message,"UseObject",
+ 						DebugMessage("UnlockAbilityDialog response: "..buttonId)
+ 						if buttonId == 0 then
+ 							-- make sure the book is still in the player's inventory
+-							if(not(IsInBackpack(this,user))) then
+-								user:SystemMessage("You must have the book in your inventory to consume it.","info")
+-								return
+-							end
+-
+-							UnlockAbility(user,paClass,paName)
++							if(not(IsInBackpack(this,user))) then
++								user:SystemMessage("You must have the book in your inventory to consume it.","info")
++								return
++							end
++							if not(HasRequiredProfession(user,paClass,paName)) then
++								user:SystemMessage("Your profession rank is no longer high enough to consume this book.","info")
++								return
++							end
++
++							UnlockAbility(user,paClass,paName)
+ 							user:SystemMessage("You have unlocked the "..displayName.." ability.","info")
+ 							user:SendMessage("OpenPrestigeBookToAbility",paClass,paName)
+ 							this:Destroy()
+@@ -100,4 +108,4 @@ RegisterEventHandler(EventType.Message,"UseObject",
+ RegisterEventHandler(EventType.Message,"SetBook",
+ 	function (name)
+ 		SetBook(name)
+-	end)
+\ No newline at end of file
++	end)
